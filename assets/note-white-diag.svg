@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   version="1.0"
+   width="14.566"
+   height="41.919998"
+   id="svg1463"
+   sodipodi:docname="note-white-diag-v2.svg"
+   inkscape:version="1.4.3 (0d15f75, 2025-12-25)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="39.369926"
+     inkscape:cx="9.055135"
+     inkscape:cy="7.0993275"
+     inkscape:window-width="2560"
+     inkscape:window-height="1369"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="g10997"
+     showguides="true" />
+  <defs
+     id="defs1466" />
+  <g
+     transform="matrix(-1,0,0,-1,247.8306,258.8548)"
+     id="g10997">
+    <path
+       d="m 237.3702,250.1588 c -2.80377,2.26929 -3.98204,5.42827 -2.64551,7.26341 1.42563,1.95746 5.19228,1.69069 8.40767,-0.59547 3.21537,-2.28616 4.66795,-5.73028 3.24232,-7.68777 -1.86812,-2.56502 -6.60681,-0.91397 -9.00453,1.01976 z"
+       style="opacity:0.9;fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.124378;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="path10999-4"
+       sodipodi:nodetypes="cscscc" />
+    <path
+       d="m 238.02365,250.86701 c -2.76331,2.1793 -4.75199,4.74504 -3.43114,6.48814 1.54957,2.04494 4.61543,0.93299 7.87481,-1.34597 3.25939,-2.27896 5.48379,-4.55274 3.93455,-6.91114 -1.70484,-2.59527 -5.80632,-0.65878 -8.37822,1.76897 z"
+       style="opacity:0.9;fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.103648;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="path10999-4-5"
+       sodipodi:nodetypes="cscsc" />
+  </g>
+</svg>
