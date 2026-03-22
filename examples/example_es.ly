@@ -20,7 +20,7 @@ snhs = #(define-music-function (offsets) (list?))
 
 \paper {
   system-system-spacing = % spacing between note systems
-    #'((basic-distance .  14)
+    #'((basic-distance .  16)
        (minimum-distance . 8)
        (padding . 1)
        (stretchability . 0))
@@ -49,17 +49,16 @@ snhs = #(define-music-function (offsets) (list?))
    \break
 
   <c' e' g'>4 _\markup\italic"C major chords" \< <c'' e'' g''>4 -- <c''' e''' g'''>4  -> r4 \! |
-  r2 _\markup\italic"rests" r4 r8 r16 r16 \bar "||" |
+  \stemUp <a, c dis fis> \stemNeutral <ais, cis e g> <b, d f gis> _\markup\italic"rests" r8 r16 r16 \bar "||" |
 
-  \snhs #'(0 1 0 0 0 1 0 0)   % manual shifting of crammed notes. Comment-out to see the effect
+  % \snhs #'(0 -2 0 0 0 0 0 2)   % manual shifting of crammed notes. uncomment to see the effect
   <c' d' e' f' g' a' b' c''>4 \mf
-  \snhs #'(-1 0 0 0 -1 0 0 0) % manual shifting of crammed notes. Comment-out to see the effect
   <c'' d'' e'' f'' g'' a'' b'' c'''>4 
   _\markup\italic"crammed chords"
-  \snhs #'(-1 0 0 0 -1 0 0 0) % manual shifting of crammed notes. Comment-out to see the effect
-  <c''' d''' e''' f''' g''' a''' b''' c''''>4
+  <cis''' dis''' f''' fis''' gis''' ais'''>4
   % r4 
-  <c'' cis'' dis'' e''>4 |
+  <e'' fis'' b' cis''>8
+  <e'' dis'' cis'' c''>8 |
   c'16 b a g  f16 e d c  c16 b, a, g,  f,16 e, d, c, |
   r4
   \clef bass
@@ -80,20 +79,27 @@ snhs = #(define-music-function (offsets) (list?))
   \ottava #0
   g'' |
   g,8 g, g, g,
-  g,8 g, g, g, | 
-  \tiny c''32 cis'' d'' dis'' e'' f'' fis'' g'' _\markup\italic\normalsize"tiny & huge notes" \normalsize 
-  \stemUp
-  \huge c''32 cis'' d'' dis'' e'' f'' fis'' g'' \normalsize 
-  \stemNeutral r2 |
   \ottava #-1
+  g,8 g, g, g, \ottava #0 | 
+  ais'4 cis''
+  cis'' e''
+  % \tiny a'32 ais' b' c'' cis'' d'' dis'' e'' f'' fis'' g'' gis'' _\markup\italic\normalsize"tiny notes" \normalsize 
+  
+  \stemNeutral
+  % \huge a'32 ais' b' c'' cis'' d'' dis'' e'' f'' fis'' g'' gis'' \normalsize 
+   |
   g,8 g, g, g,
-  \ottava #0
+  
   \clef bass
   g,8 g, g, g,  | 
   c''2 c''4  \fermata r4 |
   a16 _\markup\italic"high notes" b c' d' e' f' g' a'  
   \override Stem.details.beamed-lengths = #'(6.5) b' c'' d'' e'' 
-  \revert Stem.details.beamed-lengths r4 \bar "|." 
+  \revert Stem.details.beamed-lengths r4 |
+  \break
+  c''1 cis'' d'' dis'' e'' f'' fis'' g'' gis'' a'' ais'' b'' c''' 
+  
+  \bar "|."
 }
 
 \layout {

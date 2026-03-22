@@ -2,6 +2,7 @@
 
 import re
 import sys
+import argparse
 
 def debug(s):
     pass
@@ -83,9 +84,15 @@ class Op:
                 self.pos[i] += translatey
             
             isX = not isX
+
+    def posstr(self):
+        return [f"{round(p, 3):g}" for p in self.pos]
     
     def __str__(self):
-        return f'{self.lycmd} {" ".join(f"{p:g}" for p in self.pos)}'
+        return f'{self.lycmd} {" ".join(self.posstr())}'
+    
+    def output(self):
+        return [self.lycmd] + self.posstr()
 
 
 def extract_path_data(filename):
@@ -101,7 +108,7 @@ def extract_path_data(filename):
     
     
 
-def parse(paths, size, translatey):
+def parse(paths, size, translatey, rowlen):
 
     items = list()
     commands = list()
@@ -188,34 +195,51 @@ def parse(paths, size, translatey):
         for op in ops:
             op.scale(translatey * abs(size), factor, xmin, ymin)
             
-    print('\n'.join(str(op) for op in ops))
+    if rowlen == 0:
+        print('\n'.join(str(op) for op in ops))
+    else:
+        items = [item for op in ops for item in op.output()]
+        for i in range(0, len(items), rowlen):
+            chunk = items[i : i + rowlen]
+            print(" ".join(map(str, chunk)))
 
 
 if __name__ == "__main__":
-    if len(sys.argv) == 1:
-        print(f'''
-Converts an svg path to a lilypond path
-Usage: {sys.argv[0]} <filename> [size] [translatey]
+    parser = argparse.ArgumentParser(
+        description="Converts an svg path to a lilypond path",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
+    
+    parser.add_argument(
+        "filename", 
+        help="SVG file to convert"
+    )
+    
+    parser.add_argument(
+        "size", 
+        type=float, 
+        nargs="?", 
+        default=1.0,
+        help="Size of the resulting lilypond path. Use negative values to flip vertically."
+    )
+    
+    parser.add_argument(
+        "translatey", 
+        type=float, 
+        nargs="?", 
+        default=0.0,
+        help="Translate the path in the y direction"
+    )
 
-  size        size of the resulting lilypond path. 
-              Use negative values to flip the path vertically
-              default: 1
+    parser.add_argument(
+        "rowlen", 
+        type=float, 
+        nargs="?", 
+        default=15,
+        help="The number of elements per output row. Use 0 to show one operation per line."
+    )
 
-  translatey  translate the path in the y direction
-              default: 0
-'''.strip())
-        sys.exit(1)
-        
-    filename = sys.argv[1]
-    if len(sys.argv) > 2:
-        size = float(sys.argv[2])
-    else:
-        size = None
+    args = parser.parse_args()
 
-    if len(sys.argv) > 3:
-        translatey = float(sys.argv[3])
-    else:
-        translatey = 0
-
-    paths = extract_path_data(filename)
-    parse(paths, size, translatey)
+    paths = extract_path_data(args.filename)
+    parse(paths, args.size, args.translatey, args.rowlen)

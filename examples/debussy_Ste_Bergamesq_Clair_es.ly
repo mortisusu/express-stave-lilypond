@@ -36,7 +36,7 @@
        (padding . 0)
        (stretchability . 0))
        
-  #(layout-set-staff-size 18)
+  #(layout-set-staff-size 16)
   % system-count = #12
   % obsolete-between-system-padding = 1  system-system-spacing.padding = #(/ obsolete-between-system-padding staff-space)  score-system-spacing.padding = #(/ obsolete-between-system-padding staff-space)
   ragged-last-bottom = ##f
@@ -99,12 +99,12 @@ sv =  s8\sustainOff\sustainOn
   \barNumberCheck#5
   
   c8\( bf c bf ef bf af bf af ~ |
-  gf2. \once \override NoteColumn.force-hshift = #0.9 gf4. |
+  gf2. \hshift #0.9 gf4. |
   ef2. ef4. |
   df2. c4. |
 
   af8 gf af gf4. f4.\) ~ |
-  ef2. ef4. |
+  ef2. \hshift #0.8 ef4. |
   df2. c4. |
   bf2. a4. |
 
@@ -193,7 +193,7 @@ lhDown= \relative c' \lhDownGrey
   <ef ef,>2. s4. |
 
   <df bf' df>8-- <ef bf' ef>-- <df bf' df>-- \tuplet2/3{
-    <bf' c>-- \acciaccatura{\slurUp ef}<df, bf' df>--
+    <bf' c>-- \acciaccatura{\slurUp \stemDown ef}<df, bf' df>-- \stemNeutral
   } <bf gf' bf>4.--\)~|
   s8*9 |
   <df gf bf>8-- <ef gf bf>-- <df gf bf>-- 
@@ -254,13 +254,12 @@ lhDown= \relative c' \lhDownGrey
   \stemNeutral
   \ottava #1 <af df af'>2.--\arpeggio <af df af'>4.--\arpeggio |
   s8*9_\markup\whiteout\italic"diminuendo molto" |
-  \clef treble <f af df f>2.--\arpeggio \snhs #'(0 1) <ff af bf df ff>4.--\arpeggio |
+  \clef treble <f af df f>2.--\arpeggio <ff af bf df ff>4.--\arpeggio |
   s8*9 |
   \myExplicitBreak
   
   <af df af'>2.--\arpeggio \ottava #0 <af, ef' af>4.--\arpeggio |
   s8*9 |
-  \snhs #'(0 1 0 0 0)
   <ef gf af df ef>2.--\arpeggio <af, ef' gf c>4.--\arpeggio |
   s8*9 \bar "||"
   %\myExplicitPageBreak
@@ -399,7 +398,7 @@ lhDown= {\lhDown \relative c, \lhDownGrey }
   cs8. cs,16 gs' e e'8. e,16 cs' gs gs'8. gs,16 e' b |
   \clef treble \key cs \minor \stemUp
   cs16\( e gs b8.\) e,16\( gs b cs8.\)  gs16\( b cs e8.\)  |
-  b4.^\markup\italic"più cresc." cs e |
+  \hshift #0.6 b4.^\markup\italic"più cresc." cs e |
 
   gs4.( fs2.) |
   s8*9 |
@@ -413,7 +412,7 @@ lhDown= {\lhDown \relative c, \lhDownGrey }
   \stemUp fs2.( a4 cs8) | \stemNeutral
   s8*9 |
   fs,16 \( a cs\cu fs cs' a\)\cl fs,\( a cs\cu fs cs' a\)\cl e,\( a cs e\cu cs' cs,\)\cl |
-  e4. ds cs |
+  \hshift #0.6 e4. ds cs |
 
   \ottava #0
   fs,,2.( a4 cs8) |
@@ -461,12 +460,12 @@ lhDown= {\lhDown \relative c' \lhDownGrey }
   af,16 ef' af, ef' af, ef' af, ef' af, ef' af, ef' af, ef' af, ef' af, ef') |
   s8*9 |
 
-  <df gf bf>8( <af' c f> <gf bf ef> <gf bf>4. \snhs #'(0 1) <gf af>) |
+  <df gf bf>8( <af' c f> <gf bf ef> <gf bf>4. <gf af>) |
   s4. df8 bf df bf c ef |
   af,16( ef af ef' af, ef' af ef af ef' af, ef af ef af, ef' af, ef) |
   s8*9 |
 
-  <df gf bf>8( <af' c f> <gf bf ef> <gf bf>4. \snhs #'(0 1) <gf af>) |
+  <df gf bf>8( <af' c f> <gf bf ef> <gf bf>4. <gf af>) |
   s4. df8 bf df bf c ef |
   af16( ef af ef' af, ef' af ef af ef' af, ef af ef af ef af ef) |
   s8*9 |
@@ -612,7 +611,7 @@ lhDown= {\lhDown \relative c' \lhDownGrey }
   
 
   % TODO: move left hand to right "L. H. over" 
-  r8 bf( c_\markup { "L. H. over" } <c f af>4. \snhs #'(1 0 0) <af gf c,>4.) |
+  r8 bf( c_\markup { "L. H. over" } <c f af>4. <af gf c,>4.) |
   s8 <gf c,>4( af4.) s |
   \tuplet 2/3 {af,8\( ef'8} \stemNeutral s4. af\) |
   \stemDown af,,2. s4. |

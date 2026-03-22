@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="4.0307698mm"
+   height="2.6954401mm"
+   viewBox="0 0 4.0307698 2.6954401"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4.3 (0d15f75, 2025-12-25)"
+   sodipodi:docname="note-black-jazz.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     inkscape:zoom="4.1585017"
+     inkscape:cx="-27.293484"
+     inkscape:cy="43.405056"
+     inkscape:window-width="2560"
+     inkscape:window-height="1369"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs1" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-150.70885,-134.0136)">
+    <path
+       d="m 150.70885,135.38199 c 0,-0.12092 0.0372,-0.26148 0.11162,-0.42168 0.0765,-0.15916 0.19534,-0.31006 0.35554,-0.45062 0.15916,-0.14056 0.36587,-0.25734 0.62012,-0.3514 0.25321,-0.0961 0.56327,-0.14469 0.93017,-0.14469 0.36587,0 0.67593,0.0486 0.93018,0.14469 0.25321,0.0941 0.45992,0.21084 0.62012,0.3514 0.15916,0.14056 0.27698,0.29146 0.35139,0.45062 0.0744,0.1602 0.11163,0.30076 0.11163,0.42168 0,0.13229 -0.0372,0.27285 -0.11163,0.42168 -0.0744,0.1509 -0.19223,0.29456 -0.35139,0.42995 -0.1602,0.13746 -0.36691,0.25011 -0.62012,0.339 -0.25425,0.091 -0.56431,0.13642 -0.93018,0.13642 -0.3669,0 -0.67696,-0.0455 -0.93017,-0.13642 -0.25425,-0.0889 -0.46096,-0.20154 -0.62012,-0.339 -0.1602,-0.13539 -0.27905,-0.27905 -0.35554,-0.42995 -0.0744,-0.14883 -0.11162,-0.28939 -0.11162,-0.42168 z"
+       style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.352778"
+       id="path1" />
+  </g>
+</svg>
