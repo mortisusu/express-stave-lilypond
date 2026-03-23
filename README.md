@@ -10,17 +10,17 @@ Converting a notation to Express Stave format is easy: Just add a single line at
 \include "/path/to/express-stave.ly"
 ```
 
+### About Express Stave
+
+[Express Stave](https://musicnotation.org/system/express-stave-by-john-keller/) by **John Keller** is an alternative music notation format. It is highly intuitive and simple to understand. more information can be found in the [Music Notation Project Wiki](https://musicnotation.org/wiki/notation-systems/express-stave-by-john-keller/)
+
 ### About LilyPond
 [LilyPond](https://lilypond.org/) is a free, open-source music notation and engraving program. 
 It allows simple conversion from MusicXML (.xml, .musicxml, .mxl) files using the `musicxml2ly` utility, making it a versatile tool for all kinds of sheet music.
 
-### About Express Stave
-
-[Express Stave by John Keller](https://musicnotation.org/system/express-stave-by-john-keller/) is an alternative music notation format. It is highly intuitive and simple to understand. more information in the [Music Notation Project Wiki](https://musicnotation.org/wiki/notation-systems/express-stave-by-john-keller/)
-
 ## System Setup
 
-This library can be used on Windows, MacOS and Linux systems. To use, download the [`lib/expres-stave.ly`](./lib/expres-stave.ly) file to your computer.
+This library can be used on Windows, MacOS and Linux systems. To use, download the [`lib/express-stave.ly`](./lib/express-stave.ly) file to your computer.
 
 ### LilyPond Installation
 
