@@ -20,7 +20,9 @@ It allows simple conversion from MusicXML (.xml, .musicxml, .mxl) files using th
 
 ## System Setup
 
-This library can be used on Windows, MacOS and Linux systems. To use, download the [`lib/express-stave.ly`](./lib/express-stave.ly) file to your computer.
+This library can be used on Windows, MacOS and Linux systems. To use, download the [`lib/express-stave.ly`](./lib/express-stave.ly) file to your computer: Click [here](./lib/express-stave.ly) to go to the file page, and download it by clicking the <img src="./assets/docs/download.png" alt="download" height="20"> (download) button at the right.
+
+> **NOTE:** `lib/express-stave.ly` is the only file required to use this library.
 
 ### LilyPond Installation
 
