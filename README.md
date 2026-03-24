@@ -18,6 +18,8 @@ Converting a notation to Express Stave format is easy: Just add a single line at
 [LilyPond](https://lilypond.org/) is a free, open-source music notation and engraving program. 
 It allows simple conversion from MusicXML (.xml, .musicxml, .mxl) files using the `musicxml2ly` utility, making it a versatile tool for all kinds of sheet music.
 
+> **NOTE:** this document assumes you have a basic understanding of LilyPond and its syntax. If not, please refer to the [LilyPond documentation](https://lilypond.org).
+
 ## System Setup
 
 This library can be used on Windows, MacOS and Linux systems. To use, download the [`lib/express-stave.ly`](./lib/express-stave.ly) file to your computer: Click [here](./lib/express-stave.ly) to go to the file page, and download it by clicking the <img src="./assets/docs/download.png" alt="download" height="20"> (download) button at the right.
@@ -102,7 +104,17 @@ It is possible to display a pianoroll mark to the left of the staff lines. This 
 
 ## Example Usage
 
-See the [`examples/example_es.ly`](./examples/example_es.ly) file for a simple usage example of this library. Take a look at the resulting pdf file [`examples/example_es.pdf`](./examples/example_es.pdf).
+See the [`examples/example_es.ly`](./examples/example_es.ly) file for a simple usage example of this library. 
+
+Start by downloading it to your local machine. Locate the line that includes the library at the beginning of the file:
+
+```
+\include "../lib/express-stave.ly"
+```
+
+> Change the path to match where the library is located on you machine.
+
+Next, generate a pdf file using the `lilypond`. The result should be similar to the example pdf output available in [`examples/example_es.pdf`](./examples/example_es.pdf).
 
 ## Fixing Layout Problems
 

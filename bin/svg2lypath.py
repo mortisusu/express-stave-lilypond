@@ -70,7 +70,7 @@ class Op:
     def y(self):
         return self.pos[-1] if len(self.pos) > 0 else None
     
-    def scale(self, translatey, factor, xmin, ymin):
+    def scale(self, translatex, translatey, factor, xmin, ymin):
         isX = True
         for i in range(len(self.pos)):
             if isX:
@@ -80,8 +80,12 @@ class Op:
             
             self.pos[i] *= abs(factor)
 
-            if not isX:
+            if isX:
+                self.pos[i] += translatex
+            else:
                 self.pos[i] += translatey
+
+                
             
             isX = not isX
 
@@ -108,7 +112,7 @@ def extract_path_data(filename):
     
     
 
-def parse(paths, size, translatey, rowlen):
+def parse(paths, size, translatex, translatey, rowlen):
 
     items = list()
     commands = list()
@@ -151,18 +155,24 @@ def parse(paths, size, translatey, rowlen):
             print(items[idx:idx+length])
             raise ValueError(f'invalid length for {cmd} command at index  {idx} ({items[idx]}) and {idx2} ({items[idx2]}), length: {idx2 - idx}')
         
-    ops = []
+    ops: list[Op] = []
     lastOp = None
+    pathStartOp = None
     debug(f'commands={commands}')
     for ci in range(len(commands)):
         cmd, idx = commands[ci]
 
         if cmd == 'p':
-            lastOp = None   # a part ends, so we need to reset the lastOp
+            # a part ends, so we need to reset lastOp and pathStartOp
+            lastOp = None   
+            pathStartOp = None
             continue
         
         if cmd == 'z':
             ops.append(Op(cmd))
+            # set the last operation to the first operation in this path 
+            # (since we want to use these coords as the reference point for future relative operations)
+            lastOp = pathStartOp    
             continue
 
         if ci < len(commands) - 1:
@@ -181,6 +191,12 @@ def parse(paths, size, translatey, rowlen):
             op = Op(cmd, items[part:part+length], lastOp)
             ops.append(op)
             lastOp = op
+            if pathStartOp is None: 
+                pathStartOp = op
+            
+            # any non-defined coordinates after a "move" command is treated as a "line" command
+            if cmd.lower() == 'm':  
+                cmd = 'l'
 
     if size is not None: 
         xmin = xmax = ymin = ymax = None
@@ -190,10 +206,29 @@ def parse(paths, size, translatey, rowlen):
             ymin = mymin(ymin, op.y)
             ymax = mymax(ymax, op.y)
         
-        max_range = max(xmax - xmin, ymax - ymin)
+        xrange = xmax - xmin
+        yrange = ymax - ymin
+        max_range = max(xrange, yrange)
         factor = size / max_range
+        abssize = abs(size)
+        translatex *= abssize * (1 if xrange > yrange else xrange / yrange)
+        translatey *= abssize * (1 if yrange > xrange else yrange / xrange)
+
         for op in ops:
-            op.scale(translatey * abs(size), factor, xmin, ymin)
+            op.scale(translatex, translatey, factor, xmin, ymin if factor > 0 else ymax)
+
+
+        if True:
+            xmin = xmax = ymin = ymax = None
+            for op in ops:
+                xmin = mymin(xmin, op.x)
+                xmax = mymax(xmax, op.x)
+                ymin = mymin(ymin, op.y)
+                ymax = mymax(ymax, op.y)
+            
+            # print the bounds to stderr:
+            print(f"Bounding Box: ({xmin:.3g}, {ymin:.3g}), ({xmax:.3g}, {ymax:.3g})", file=sys.stderr)
+            print(file=sys.stderr)
             
     if rowlen == 0:
         print('\n'.join(str(op) for op in ops))
@@ -219,8 +254,16 @@ if __name__ == "__main__":
         "size", 
         type=float, 
         nargs="?", 
-        default=1.0,
+        default=None,
         help="Size of the resulting lilypond path. Use negative values to flip vertically."
+    )
+
+    parser.add_argument(
+        "translatex", 
+        type=float, 
+        nargs="?", 
+        default=0.0,
+        help="Translate the path in the x direction"
     )
     
     parser.add_argument(
@@ -240,6 +283,5 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-
     paths = extract_path_data(args.filename)
-    parse(paths, args.size, args.translatey, args.rowlen)
+    parse(paths, args.size, args.translatex, args.translatey, args.rowlen)

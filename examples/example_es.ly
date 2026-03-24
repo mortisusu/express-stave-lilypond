@@ -5,7 +5,7 @@ snhs = #(define-music-function (offsets) (list?))
 
 % #(define express-staff-space 1.5) % uncomment to modify the notation space
 % #(define express-showpianoroll 1) % uncomment to show a small pianoroll to the left of the staff lines
-% #(define express-pianoforte 0) % uncomment for express stave original notation (white piano keys = white notes)
+#(define express-pianoforte 1) % uncomment for express stave original notation (white piano keys = white notes)
 \include "../lib/express-stave.ly" % comment-out to show classical notation
 
 \header {
@@ -28,6 +28,10 @@ snhs = #(define-music-function (offsets) (list?))
   #(layout-set-staff-size 18) % general staff size
 }
 
+msg =
+#(define-scheme-function (text) (markup?)
+   #{ \markup \fontsize #-3 #text #})
+
 \parallelMusic #'(voiceA voiceB) {
   \tempo"Andante très expressif"
   \clef treble
@@ -48,7 +52,7 @@ snhs = #(define-music-function (offsets) (list?))
    f'2 g' |
    \break
 
-  <c' e' g'>4 _\markup\italic"C major chords" \< <c'' e'' g''>4 -- <c''' e''' g'''>4  -> r4 \! |
+  <c' e' g'>4 _\markup\italic"chords" \< <c'' e'' g''>4 -- <c''' e''' g'''>4  -> r4 \! |
   \stemUp <a, c dis fis> \stemNeutral <ais, cis e g> <b, d f gis> _\markup\italic"rests" r8 r16 r16 \bar "||" |
 
   % \snhs #'(0 -2 0 0 0 0 0 2)   % manual shifting of crammed notes. uncomment to see the effect
@@ -97,8 +101,10 @@ snhs = #(define-music-function (offsets) (list?))
   \override Stem.details.beamed-lengths = #'(6.5) b' c'' d'' e'' 
   \revert Stem.details.beamed-lengths r4 |
   \break
-  c''1 cis'' d'' dis'' e'' f'' fis'' g'' gis'' a'' ais'' b'' c''' 
-  
+  c''1 _\msg"C" _\msg"0"  cis'' _\msg"I" _\msg"1" d'' _\msg"D" _\msg"2" dis'' _\msg"J" _\msg"3"
+  e'' _\msg"E" _\msg"4" f'' _\msg"F" _\msg"5" fis'' _\msg"K" _\msg"6" g'' _\msg"G" _\msg"7"
+  gis''_\msg"L" _\msg"8" a'' _\msg"A" _\msg"9" ais'' _\msg"H" _\msg"10" b''_\msg"B" _\msg"11" 
+  c''' _\msg"C" _\msg"0"
   \bar "|."
 }
 
@@ -106,7 +112,13 @@ snhs = #(define-music-function (offsets) (list?))
   \context {
     \Score
   }
+
+   \context {
+    \Staff
+  }
 }
+
+ 
 
 
   \new PianoStaff <<
