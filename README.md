@@ -20,7 +20,7 @@ Converting a notation to the Express Stave format is easy: Just add a single lin
 [LilyPond](https://lilypond.org/) is a free, open-source music notation and engraving program. 
 It allows simple conversion from MusicXML (.xml, .musicxml, .mxl) files using the `musicxml2ly` utility, making it a versatile tool for all kinds of sheet music.
 
-> **NOTE:** this document assumes you have basic understanding of LilyPond and its syntax. To leasrn more, please refer to the [LilyPond documentation](https://lilypond.org).
+> **NOTE:** this document assumes you have basic understanding of LilyPond and its syntax. To learn more, please refer to the [LilyPond documentation](https://lilypond.org).
 
 ## System Setup
 
