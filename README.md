@@ -1,10 +1,12 @@
 # Express Stave support for LilyPond
 
+![](assets/docs/title.png)
+
 ## About This Project
 
-This library allows **LilyPond** users to export .ly files in the **Express Stave** alternative notation format. It supports both the Express Stave **Pianoforte** and **original** formats, using **Pianoforte** by default.
+This library allows **LilyPond** users to convert `.ly` files to the **Express Stave** alternative notation format. It supports both the Express Stave **Pianoforte** and **original** formats, applying **Pianoforte** by default.
 
-Converting a notation to Express Stave format is easy: Just add a single line at the start of your `.ly` notation file:
+Converting a notation to the Express Stave format is easy: Just add a single line at the start of your `.ly` notation file:
 
 ```
 \include "/path/to/express-stave.ly"
@@ -18,7 +20,7 @@ Converting a notation to Express Stave format is easy: Just add a single line at
 [LilyPond](https://lilypond.org/) is a free, open-source music notation and engraving program. 
 It allows simple conversion from MusicXML (.xml, .musicxml, .mxl) files using the `musicxml2ly` utility, making it a versatile tool for all kinds of sheet music.
 
-> **NOTE:** this document assumes you have a basic understanding of LilyPond and its syntax. If not, please refer to the [LilyPond documentation](https://lilypond.org).
+> **NOTE:** this document assumes you have basic understanding of LilyPond and its syntax. To leasrn more, please refer to the [LilyPond documentation](https://lilypond.org).
 
 ## System Setup
 
@@ -49,25 +51,6 @@ Next, install the LilyPond extension. Go to the Extensions menu (keyboard shortc
 [Frescobaldi](https://frescobaldi.org/) is free dedicated LilyPond sheet music text editor.
 
 To install, follow the instructions at https://frescobaldi.org/download.html
-
-## Preparing your `.ly` file
-
-This section explains how to convert `musicxml` or older versions of `.ly` files. You may skip it if not required.
-
-### Converting `musicXML` files into LilyPond `.ly` files
-
-In order to convert musicXML (`.musicxml`, .`xml`, .`mxl`) files into `.ly`, use LilyPond's `musicxml2ly.py` command. For example:
-
-```
-musicxml2ly.py prelude-8.mxl
-```
-
-### Upgrading old `.ly` files
-
-Older `.ly` files may need to be upgraded to newer LilyPond file versions. Use LilyPond's `convert-ly.py` command. For example:
-
-``convert-ly.py -e nocturne-11.ly``
-
 
 ## Converting an `.ly` file to Express Stave engraving
 
@@ -102,9 +85,9 @@ It is possible to display a pianoroll mark to the left of the staff lines. This 
   <img alt="" src="./assets/docs/pianoroll.png" style="margin-left: 20px;" height="140">
 </div>
 
-## Example Usage
+## Examples
 
-See the [`examples/example_es.ly`](./examples/example_es.ly) file for a simple usage example of this library. 
+The [`examples/`](./examples/) directory contains various examples. See the [`examples/example_es.ly`](./examples/example_es.ly) file for a simple usage example of this library. 
 
 Start by downloading it to your local machine. Locate the line that includes the library at the beginning of the file:
 
@@ -116,11 +99,27 @@ Start by downloading it to your local machine. Locate the line that includes the
 
 Next, generate a pdf file using the `lilypond`. The result should be similar to the example pdf output available in [`examples/example_es.pdf`](./examples/example_es.pdf).
 
-## Fixing Layout Problems
+## Tips & Tricks
+
+### Converting `musicXML` files into LilyPond `.ly` files
+
+LilyPond allows simple coversion of musicXML files (`.musicxml`, .`xml`, .`mxl`) to `.ly` format, using LilyPond's `musicxml2ly.py` script. For example:
+
+```
+musicxml2ly.py prelude-8.mxl
+```
+
+### Upgrading old `.ly` file versions
+
+Older `.ly` files may need to be upgraded to newer LilyPond file versions by using LilyPond's `convert-ly.py` command. For example:
+
+``convert-ly.py -e nocturne-11.ly``
+
+### Fixing Layout Problems
 
 In some cases, it is required to optimize the notation layout in order to fit the new express stave notation format. This section addresses common layout issues.
 
-### Debugging
+#### Debugging
 
 To display debug information regarding spacing, add the following to the ``\print`` section:
 ```
@@ -130,13 +129,13 @@ annotate-spacing = ##t
 Also, it is recommended to enable PDF point and click: comment out any `\pointAndClickOff` commands. This will let you jump from your current cursor position to the relevant PDF area and back.
 
 
-> In **Visual Studio Code**, To jump from your current cursor position to the note position on the .pdf file, use the following command:
+> In **Visual Studio Code**, you can jump from your current cursor position in the `.ly` file to the note position on the `.pdf` file, use the following command:
 >
 > `Ctrl + Shift + P => LilyPond PDF Preview: Go to PDF location from Cursor`
 > 
 > You may add a keyboard shortcut to this command (e.g. F2) and setting the `when` option to `editorTextFocus && editorLangId == 'lilypond'`
 
-### Clefs and Octaves
+#### Clefs and Octaves
 
 You may need to modify existing `\clef` and `\ottava` commands to better fit the Express Stave note positions
 
@@ -149,7 +148,7 @@ Express Stave overrides the `\clef` command and supports the following clefs:
   `\clef bass` translates to the Express Stave **F (bass)** clef
 
 
-### Spacing
+#### Spacing
 
 To control the space between note line systems, add the following to the ``\paper`` section:
 
@@ -209,11 +208,11 @@ To control horizontal notation spacing, add the following to the ``\layout`` sec
   <img alt="" src="./assets/docs/horizontal-space.png" style="margin-left: 20px;" height="100">
 </div>
 
-In case where there are many notes crammed in a chord, the `snhs` (Shift Noteheads) command, that defines the shift of all notes in a chord, e.g.
+This library automatically adjusts notehead positions to avoid collisions. If you need more control, use the `snhs` (Shift Noteheads) command, that defines the shift of all notes in a chord, e.g.
 
 <div style="display: flex; align-items: center;">
   <div style="width:100%">
-    <pre><code>    % without shifting,  noteheads are crammed
+    <pre><code>    % without shifting, noteheads are crammed
     &lt;c d e&gt;4
     % shift the 2nd note (d) one step to the left:
     \snhs #'(0 -1 0)
@@ -223,17 +222,18 @@ In case where there are many notes crammed in a chord, the `snhs` (Shift Notehea
   <img alt="" src="./assets/docs/shiftl.png" style="margin-left: 20px;" height="100">
 </div>
 
-Alternatively, you can use the `\shiftl` and `\shiftr` commands to offset one of the noteheads away from the others, e.g.
+Alternatively, you can use the `\shiftl` and `\shiftr` commands to offset a single notehead away from the others, e.g.
 
 ```
 % achieves similar results to \snhs above:
 <c \shiftl d e>4
 ```
 
-You can also use `\hshift` to move an entire note, along with its stem. This can be usedful when several notes from different voices collide.
+You can also use `\hshift` to move an entire note group, along with the stem. This can be useful when several notes from different voices collide.
 
 ```
-\hshift 0.6 c
+\hshift 0.6 % shifts the next note to the right
+c 
 ```
 
 Add ``\break`` commands between bars to force line breaks. Add ``\pageBreak`` to force page breaks.
@@ -245,6 +245,7 @@ To control the space between textual comments and notation, add:
 ```
 
 ### Errors and Warnings
+
 Fixing `no viable initial configuration found: may not find good beam slope` warnings:
 
 These warnings happen when the system has problems rendering a connector beams. You may notice strange beam angles in the affected area. You may safely ignore these if the display is correct. To fix, add the following **right before** the problematic section:
@@ -260,5 +261,9 @@ These warnings happen when there are different voices attempting to show differe
 
 Change the stem direction using the `\stemUp` and `\stemDown`. Don't forget to call `\stemNeutral` after to revert to the original stem direction.
 
-Change the note's voice using `\voiceOne`, `\voiceTwo`, etc. Remember to 
+Change the note's voice using `\voiceOne`, `\voiceTwo`, etc. Remember to revert back to the original voice at the end of the section. For example:
 
+```
+% this section is part of \voiceOne. we are fixing the voice warning on the g note:
+f f \voiceThree g \voiceOne c |
+```
