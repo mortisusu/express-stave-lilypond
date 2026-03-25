@@ -5,7 +5,7 @@ snhs = #(define-music-function (offsets) (list?))
 
 % #(define express-staff-space 1.5) % uncomment to modify the notation space
 % #(define express-showpianoroll 1) % uncomment to show a small pianoroll to the left of the staff lines
-#(define express-pianoforte 1) % uncomment for express stave original notation (white piano keys = white notes)
+% #(define express-pianoforte 0) % uncomment for express stave original notation (white piano keys = white notes)
 \include "../lib/express-stave.ly" % comment-out to show classical notation
 
 \header {

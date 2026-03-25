@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   version="1.0"
+   width="130.000000pt"
+   height="158.000000pt"
+   viewBox="0 0 130.000000 158.000000"
+   preserveAspectRatio="xMidYMid meet"
+   id="svg1"
+   sodipodi:docname="express-d-int4-w.svg"
+   inkscape:version="1.4.3 (0d15f75, 2025-12-25)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1" />
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="pt"
+     inkscape:zoom="3.9170583"
+     inkscape:cx="53.484014"
+     inkscape:cy="114.49919"
+     inkscape:window-width="2560"
+     inkscape:window-height="1369"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="g1" />
+  <g
+     transform="translate(0.000000,158.000000) scale(0.066667,-0.066667)"
+     fill="#000000"
+     stroke="none"
+     id="g1">
+    <path
+       id="path1"
+       d="M 334.00468 2239.9986 C 512.12198 2017.0349 790.14262 1564.3064 804.50281 1522.7048 C 411.48514 1546.1955 234.9318 1127.1819 262.98941 937.99336 C 302.98941 675.99336 761.00225 803.00319 917.00225 1119.0032 C 976.00225 1240.0032 972.99699 1325.0108 893.99699 1750.0108 C 879.92273 1841.3821 856.06783 1918.1465 826.16774 2078.0389 C 1264.7228 1978.8847 1507.006 1368.9935 1343.006 804.99353 C 1318.6842 721.97786 1063.6954 42.447574 776.35598 515.30748 C 618.53126 379.70714 480.00169 221.84688 322.46909 93.76418 C 748.44995 87.740154 1059.8269 149.60541 1382.0073 354.00702 C 1913.0073 706.00702 1921.992 1596.0077 1398.992 1983.0077 C 1152.992 2164.0077 750.45856 2268.2585 334.00468 2239.9986 z M 728.12624 1368.084 C 757.5008 1367.424 783.36013 1359.4566 802.10781 1343.5626 C 849.13842 1303.6908 805.54221 1182.9817 754.36146 1113.2024 C 663.66566 989.5487 536.17203 892.2443 401.35053 922.98611 C 296.04619 946.99745 396.84308 1144.8709 521.1888 1273.1186 C 581.82595 1335.6586 663.50222 1369.536 728.12624 1368.084 z " />
+  </g>
+</svg>

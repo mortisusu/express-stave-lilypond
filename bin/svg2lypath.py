@@ -8,6 +8,10 @@ def debug(s):
     pass
     # print(s)
 
+def info(s):
+    print(s, file=sys.stderr)
+
+
 def mymin(a, b):
     return b if a is None else a if b is None else min(a, b)
 
@@ -30,8 +34,9 @@ class Op:
         'h': PathCommand('lineto', 1),
     }
         
-    def __init__(self, cmd, items=None, lastOp=None):
+    def __init__(self, cmd, pathIndex, items=None, lastOp=None):
         self.cmdl = cmd.lower()
+        self.pathIndex = pathIndex
         if self.cmdl not in self.cmd2ly:
             raise Exception(f'Unknown command {cmd}')
         
@@ -108,7 +113,9 @@ def extract_path_data(filename):
     if not paths:
         raise Exception("Unable to find path data")
     
-    return paths
+    res = [re.split(r'[\s,]+', s.strip()) for s in paths]
+
+    return res
     
     
 
@@ -117,8 +124,7 @@ def parse(paths, size, translatex, translatey, rowlen):
     items = list()
     commands = list()
 
-    for s in paths:
-        split = re.split(r'[\s,]+', s)
+    for split in paths:
         debug(f'items={split}')
 
         for i in range(len(split)):
@@ -126,7 +132,6 @@ def parse(paths, size, translatex, translatey, rowlen):
             p = split[i]
             if p.lower().endswith('z'):
 
-                
                 item = p[:-1].strip()
                 if item:
                     items.append(item)
@@ -158,6 +163,7 @@ def parse(paths, size, translatex, translatey, rowlen):
     ops: list[Op] = []
     lastOp = None
     pathStartOp = None
+    closedPathIndex = 0
     debug(f'commands={commands}')
     for ci in range(len(commands)):
         cmd, idx = commands[ci]
@@ -169,7 +175,9 @@ def parse(paths, size, translatex, translatey, rowlen):
             continue
         
         if cmd == 'z':
-            ops.append(Op(cmd))
+            ops.append(Op(cmd, closedPathIndex))
+            closedPathIndex += 1
+
             # set the last operation to the first operation in this path 
             # (since we want to use these coords as the reference point for future relative operations)
             lastOp = pathStartOp    
@@ -188,7 +196,7 @@ def parse(paths, size, translatex, translatey, rowlen):
         verify()
         
         for part in range(idx, idx2, length):
-            op = Op(cmd, items[part:part+length], lastOp)
+            op = Op(cmd, closedPathIndex, items[part:part+length], lastOp)
             ops.append(op)
             lastOp = op
             if pathStartOp is None: 
@@ -197,6 +205,8 @@ def parse(paths, size, translatex, translatey, rowlen):
             # any non-defined coordinates after a "move" command is treated as a "line" command
             if cmd.lower() == 'm':  
                 cmd = 'l'
+
+    info(f"Extracted {closedPathIndex} closed path(s) - [" + ", ".join([f"{i}: {len([op for op in ops if op.pathIndex == i])} ops" for i in range(closedPathIndex)]) + "]")
 
     if size is not None: 
         xmin = xmax = ymin = ymax = None
@@ -227,22 +237,39 @@ def parse(paths, size, translatex, translatey, rowlen):
                 ymax = mymax(ymax, op.y)
             
             # print the bounds to stderr:
-            print(f"Bounding Box: ({xmin:.3g}, {ymin:.3g}), ({xmax:.3g}, {ymax:.3g})", file=sys.stderr)
-            print(file=sys.stderr)
+            info(f"Bounding Box: ({xmin:.3g}, {ymin:.3g}), ({xmax:.3g}, {ymax:.3g})")
+            info("")
+
+    filtered_ops = [op for op in ops if args.paths is None or op.pathIndex in args.paths]
+    if len(filtered_ops) == 0:
+        info("WARNING: No operations found matching the specified paths")
+
             
     if rowlen == 0:
-        print('\n'.join(str(op) for op in ops))
+        print('\n'.join(str(op) for op in filtered_ops))
     else:
-        items = [item for op in ops for item in op.output()]
+        items = [item for op in filtered_ops for item in op.output()]
         for i in range(0, len(items), rowlen):
             chunk = items[i : i + rowlen]
             print(" ".join(map(str, chunk)))
 
 
+def list_of_ints(arg):
+    return [int(x) for x in arg.split(',')]
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Converts an svg path to a lilypond path",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
+
+    
+    parser.add_argument(
+        "-p", "--paths",
+        type=list_of_ints,
+        help="Comma-separated list of path indices to convert (e.g. 0,2). If omitted, all paths will be converted.",
+        default=None
+
     )
     
     parser.add_argument(
