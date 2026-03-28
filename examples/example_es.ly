@@ -25,7 +25,7 @@ snhs = #(define-music-function (offsets) (list?))
        (padding . 1)
        (stretchability . 0))
 
-  #(layout-set-staff-size 18) % general staff size
+  #(layout-set-staff-size 17.55) % general staff size
 }
 
 msg =
@@ -85,9 +85,9 @@ msg =
   g,8 g, g, g,
   \ottava #-1
   g,8 g, g, g, \ottava #0 | 
-  ais'4 cis''
-  cis'' e''
-  % \tiny a'32 ais' b' c'' cis'' d'' dis'' e'' f'' fis'' g'' gis'' _\markup\italic\normalsize"tiny notes" \normalsize 
+  a'16 ais' c'' cis'' dis'' e'' fis'' g''
+  % cis'' e''
+  \tiny a'16 ais' c'' cis'' dis'' e'' fis'' g'' _\markup\italic\normalsize"tiny notes" \normalsize 
   
   \stemNeutral
   % \huge a'32 ais' b' c'' cis'' d'' dis'' e'' f'' fis'' g'' gis'' \normalsize 

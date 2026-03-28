@@ -31,7 +31,8 @@
      inkscape:window-x="-8"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
-     inkscape:current-layer="layer1" />
+     inkscape:current-layer="layer1"
+     showgrid="false" />
   <defs
      id="defs1" />
   <g
@@ -41,7 +42,7 @@
      transform="translate(-157.69167,-159.01459)">
     <path
        id="path57-1"
-       d="m 160.8371,160.27962 0.10211,-1.26503 h 0.25821 v 1.90996 h -0.25821 z m -2.88723,0.64493 h -0.2582 v -1.90996 h 0.2582 l 0.10211,0.54983 z"
+       d="m 160.78143,160.27962 0.10211,-1.26503 h 0.31388 v 1.90996 h -0.31388 z m -2.77589,0.64493 h -0.31387 v -1.90996 h 0.31387 l 0.10211,0.54983 z"
        style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.352777"
        aria-label="["
        sodipodi:nodetypes="cccccccccccc" />
