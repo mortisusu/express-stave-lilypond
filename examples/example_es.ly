@@ -87,7 +87,8 @@ msg =
   g,8 g, g, g, \ottava #0 | 
   a'16 ais' c'' cis'' dis'' e'' fis'' g''
   % cis'' e''
-  \tiny a'16 ais' c'' cis'' dis'' e'' fis'' g'' _\markup\italic\normalsize"tiny notes" \normalsize 
+  r4 a'4
+  %\tiny a'16 ais' c'' cis'' dis'' e'' fis'' g'' _\markup\italic\normalsize"tiny notes" \normalsize 
   
   \stemNeutral
   % \huge a'32 ais' b' c'' cis'' d'' dis'' e'' f'' fis'' g'' gis'' \normalsize 
