@@ -523,22 +523,30 @@ ottava =
           (note-height (- y-max y-min))
           ; translate-up is the translation value required to place the top edge of the notehead
           ; against the staff head two semitones above the current note
-          (translate-up (- (* 2 0.5  express-staff-space) ; the poisition 2 semitones up
-            (* 0.5 note-height) ; reducing half the notehead height
+          (translate-up (+ (* 2 0.5  express-staff-space) ; the poisition 2 semitones up
+            (* -0.5 note-height) ; reducing half the notehead height
+            (* -0.5 staff-thickness) ; reducing half the notehead thickness
+            0.02)) ; a slight nudge towards the staff line since there's sometimes a very small gap
+
+          (translate-up-ext (+ (* 1 0.5  express-staff-space) ; the poisition 2 semitones up
+            (* -0.4 note-height) ; reducing half the notehead height
             (* 0.5 staff-thickness) ; reducing half the notehead thickness
-            -0.02)) ; a slight nudge towards the staff line since there's sometimes a very small gap
+            0)) ; a slight nudge towards the staff line since there's sometimes a very small gap
         )
         
         ; for each note position, we decide to which direction (if any) to translate
-        (* translate-up
-          (case note-shape
-            ; C, I(C#), K(F#), G: going up
-            ((0 1 6 7) 1)
-            ; J(D#) E, A, H(A#): going down
-            ((3 4 9 10) -1)
-            ; D, F, L(G#), B: stay in the middle
-            (else 0)
-          ))
+        
+        (case note-shape
+          ; C, K(F#), I(C#), G: going up
+          ((0 6) translate-up)
+
+          ((1 7) translate-up-ext)
+          ; J(D#) E, A, H(A#): going down
+          ((4 10) (* -1 translate-up))
+          ((3 9) (* -1 translate-up-ext))
+          ; D, F, L(G#), B: stay in the middle
+          (else 0)
+        )
       ))
 
       (notehead-shifted (ly:stencil-translate notehead (cons 0 y-translate)))
