@@ -20,12 +20,30 @@ snhs = #(define-music-function (offsets) (list?))
 
 \paper {
   system-system-spacing = % spacing between note systems
-    #'((basic-distance .  16)
+    #'((basic-distance .  15.955)
        (minimum-distance . 8)
        (padding . 1)
        (stretchability . 0))
 
   #(layout-set-staff-size 17.55) % general staff size
+}
+
+\layout {
+  \context {
+    \Score
+    % staff-staff-spacing: uncomment to change
+    % \override StaffGrouper.staff-staff-spacing = 
+    %   #'((basic-distance . 20)
+    %   (minimum-distance . 8)
+    %   (padding . 1)
+    %   (stretchability . 0))
+
+    % \override SpacingSpanner.spacing-increment = #10.0 % uncomment to change horizontal spacing between notes
+  }
+
+   \context {
+    \Staff
+  }
 }
 
 msg =
@@ -72,7 +90,7 @@ msg =
   \clef treble
   d'4 |
   cis'16 _\markup\italic"low notes " ais16 gis fis dis cis ais, gis, fis, dis, cis, ais,, 
-  \override Stem.details.beamed-lengths = #'(4.5)gis,, fis,, 
+  gis,, fis,, 
   \revert Stem.details.beamed-lengths r8 |
   \break
   \clef treble
@@ -87,8 +105,7 @@ msg =
   g,8 g, g, g, \ottava #0 | 
   a'16 ais' c'' cis'' dis'' e'' fis'' g''
   % cis'' e''
-  r4 a'4
-  %\tiny a'16 ais' c'' cis'' dis'' e'' fis'' g'' _\markup\italic\normalsize"tiny notes" \normalsize 
+  \tiny a'16 ais'  _\markup\italic\normalsize"tiny notes" c'' cis'' dis'' e'' fis'' g'' \normalsize 
   
   \stemNeutral
   % \huge a'32 ais' b' c'' cis'' d'' dis'' e'' f'' fis'' g'' gis'' \normalsize 
@@ -109,17 +126,6 @@ msg =
   \bar "|."
 }
 
-\layout {
-  \context {
-    \Score
-  }
-
-   \context {
-    \Staff
-  }
-}
-
- 
 
 
   \new PianoStaff <<

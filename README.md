@@ -154,12 +154,13 @@ To control the space between note line systems, add the following to the ``\pape
 
 <div style="display: flex; align-items: center;">
   <div style="width:100%">
-    <pre><code>  system-system-spacing =
+    <pre><code>\paper {
+  system-system-spacing =
     #'((basic-distance . 14)
        (minimum-distance . 8)
        (padding . 1)
        (stretchability . 0))
-
+}
 </code></pre>
   </div>
   <img alt="" src="./assets/docs/system-system-space.png" style="margin-left: 20px;" height="200">
@@ -168,30 +169,37 @@ To control the space between note line systems, add the following to the ``\pape
 
 To scale the notation size, add the following to the ``\paper`` section:
 ```
+\paper {
     #(layout-set-staff-size 18)
+}
 ```
 
 To control the vertical staff spacing (that's the space between the three staff lines), add:
 
 <div style="display: flex; align-items: center;">
   <div style="width:100%">
-    <pre><code>    #(define express-staff-space 1.2) % add this BEFORE including MNP-scripts.ly
-    \include "../lib/MNP-scripts.ly"
+    <pre><code>#(define express-staff-space 1.2) % add BEFORE including express-stave.ly
+\include "../lib/express-stave.ly"
 </code></pre>
   </div>
   <img alt="" src="./assets/docs/express-staff-space.png" style="margin-left: 20px;" height="80">
 </div>
 
 
-To control the space between the right-hand and left-hand staff lines, add the following to the ``\layout`` section:
+To control the space between the right-hand and left-hand staff lines, add the following to the ``\layout`` ``\context score`` section:
 
 <div style="display: flex; align-items: center;">
   <div style="width:100%">
-    <pre><code>\override StaffGrouper.staff-staff-spacing = 
+    <pre><code>\layout {
+  \context {
+    \Score
+    \override StaffGrouper.staff-staff-spacing = 
     #'((basic-distance . 12)
     (minimum-distance . 8)
     (padding . 1)
     (stretchability . 0))
+  }
+}
 </code></pre>
   </div>
   <img alt="" src="./assets/docs/staff-staff-space.png" style="margin-left: 20px;" height="140">
@@ -201,8 +209,12 @@ To control horizontal notation spacing, add the following to the ``\layout`` sec
 
 <div style="display: flex; align-items: center;">
   <div style="width:100%">
-    <pre><code>    % controls the horizontal (width) spacing between notes
+    <pre><code>>\layout {
+  \context {
+    \Score    % controls the horizontal (width) spacing between notes
     \override SpacingSpanner.spacing-increment = #3.0 
+  }
+}
 </code></pre>
   </div>
   <img alt="" src="./assets/docs/horizontal-space.png" style="margin-left: 20px;" height="100">
@@ -232,30 +244,32 @@ Alternatively, you can use the `\shiftl` and `\shiftr` commands to offset a sing
 You can also use `\hshift` to move an entire note group, along with the stem. This can be useful when several notes from different voices collide.
 
 ```
-\hshift 0.6 % shifts the next note to the right
-c 
+<c
+\hshift 0.6 % shifts a single next note to the right (e only)
+e f>
 ```
 
 Add ``\break`` commands between bars to force line breaks. Add ``\pageBreak`` to force page breaks.
 
-To control the space between textual comments and notation, add:
-
 ```
-\override Score.MetronomeMark.padding = #4
+ c b e g |
+ c b e g | \break % forces a line break here
+ c b e g |
+ c b e g | \pageBreak % forces a page break here
 ```
 
 ### Errors and Warnings
 
-Fixing `no viable initial configuration found: may not find good beam slope` warnings:
+#### Fixing `no viable initial configuration found: may not find good beam slope` warnings:
 
 These warnings happen when the system has problems rendering a connector beams. You may notice strange beam angles in the affected area. You may safely ignore these if the display is correct. To fix, add the following **right before** the problematic section:
 
 ```
-    \beampos -12.5 -10 % change these values until you are pleased with the result
+\beampos -12.5 -10 % change these values until you are pleased with the result
 ```
 
 
-Fixing `this Voice needs a \voiceXx or \shiftXx setting` warnings:
+#### Fixing `this Voice needs a \voiceXx or \shiftXx setting` warnings:
 
 These warnings happen when there are different voices attempting to show different notes in the same staff with the same stem direction. You may notice notes that are supposed to be in the same position, rendered next to each other instead. To fix, experiment with using one of the following before the problematic note:
 
