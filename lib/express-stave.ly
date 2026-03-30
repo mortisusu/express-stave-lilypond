@@ -35,9 +35,7 @@
 %   https://musicnotation.org/wiki/notation-systems/express-stave-by-john-keller/
 
 \version "2.24.0"
-
-% express-stave.ly version 0.8.2
-
+#(define ES_VERSION "1.NNN")
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
