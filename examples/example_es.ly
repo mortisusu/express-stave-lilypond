@@ -5,17 +5,16 @@ snhs = #(define-music-function (offsets) (list?))
 
 % #(define express-staff-space 1.5) % uncomment to modify the notation space
 % #(define express-showpianoroll 1) % uncomment to show a small pianoroll to the left of the staff lines
-% #(define express-pianoforte 0) % uncomment for express stave original notation (white piano keys = white notes)
+#(define express-pianoforte 1) % uncomment for express stave original notation (white piano keys = white notes)
 \include "../lib/express-stave.ly" % comment-out to show classical notation
 
 \header {
 	title = 	"Express Stave Demo"
   subtitle = #(if (and (defined? 'express-pianoforte) (= express-pianoforte 1)) "Pianoforte Notation" "Orignal Notation")
-	opus = 	"Op. 111, No. 20"
-	composer =	"Composer Name (1810-1849)"
+	opus = 	\markup \tiny \line {"Library Version: " #ES_VERSION }
+	composer =	"Express Stave by John Keller"
 	style =	"Music Style"
   footer = "Express Stave"
-  tagline = "Notation: Express Stave by John Keller"
  }
 
 \paper {

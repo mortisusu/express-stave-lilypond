@@ -35,7 +35,7 @@
 %   https://musicnotation.org/wiki/notation-systems/express-stave-by-john-keller/
 
 \version "2.24.0"
-#(define ES_VERSION "1.NNN")
+#(define ES_VERSION "1.26.03.30")
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -696,6 +696,17 @@ ottava =
        (begin
          (set! indent (* 0 mm))
          (set! short-indent (* 0 mm))))
+}
+
+
+\header {
+    tagline = \markup \center-column \tiny {
+      \center-column {
+        \line { Music engraving by LilyPond #(lilypond-version) — \with-url "https://lilypond.org/" "www.lilypond.org"}
+        \line { Express Stave for LilyPond #ES_VERSION — \with-url "https://github.com/mortisusu/express-stave-lilypond/" "github.com/mortisusu/express-stave-lilypond"}
+      }
+    
+  }
 }
 
 \layout { 
