@@ -55,24 +55,54 @@ msg =
 #(define-scheme-function (text) (markup?)
    #{ \markup \fontsize #-3 #text #})
 
-msg =
-#(define-scheme-function (text) (markup?)
-   #{ \markup \fontsize #-3 #text #})
+notes = {
+  ais'8 _\msg"8/2 =" s4. ais'2 _\msg"2/8 ="| 
+  ais'2 ais'8 s4. |
+  s1|
+  s1|
 
-\parallelMusic #'(voiceA voiceB voiceC voiceD) {
+  d''8 _\msg"8/2" s4. ais'8 _\msg"8/2" s4.|
+  ais'2 cis''2 |
+  s1|
+  s1|
 
-  % --- Bar 1 ---
-  <g'c''>8 e'' r4 <g'f''>8 e'' r4 | % A
-  g'2_\msg"merged" a'2 | % B
-  g2 c2            | % C
-  c2 g2            | % D
+  b'8 s8 r4 d''8 e'' f''4 | % A
+  ais'2 ais'2                  | % B
+  gis2 cis4 s4           | % C
+  cis2 ais,2            | % D
 
-  % --- Bar 2 ---
-  <f' g' b'>2 \once \oneVoice r2 | % A
-  s1                  | % B
+  ais'2 _\msg"2/2" <fis' gis' ais'>2  | % A
+  ais'2 s2                 |
   g1                  | % C
   c1                  | % D
 
+  <g'c''>8 e'' r4 <g'f''>8 e'' r4 | % A
+  g'2 a'2 | % B
+  g1                  | % C
+  c1                  | % D
+
+  ais'2 fis''2                  | % A
+  ais'8 cis'' r4 d''8 e'' f''4 | % B
+  gis2 cis4 s4           | % C
+  cis2 ais,2            | % D
+
+  \break
+}
+
+\parallelMusic #'(voiceA voiceB voiceC voiceD) {
+  \override Score.MetronomeMark.padding = #3
+
+  \mergeDifferentlyDottedOff
+  \mergeDifferentlyHeadedOff
+  \tempo "Merge disabled:"
+  \notes
+
+  % \mergeDifferentlyDottedOff\mergeDifferentlyHeadedOff
+  \mergeDifferentlyDottedOn
+  \mergeDifferentlyHeadedOn
+  \tempo "Merge enabled (no post-processing):"
+  \override NoteColumn.before-line-breaking = ##f
+  \notes
 
 }
 
@@ -94,3 +124,56 @@ msg =
     >>
   >>
 }
+
+
+% <<
+%   \relative {
+%     c''8 d e d c d c4
+%     g'2 fis
+%   } \\
+%   \relative {
+%     c''2 c8. b16 c4
+%     e,2 r
+%   } \\
+%   \relative {
+%     \oneVoice
+%     s1
+%     e'8 a b c d2
+%   }
+% >>
+
+% <<
+%   \relative {
+%     \mergeDifferentlyHeadedOn
+%     c''8 d e d c d c4
+%     g'2 fis
+%   } \\
+%   \relative {
+%     c''2 c8. b16 c4
+%     e,2 r
+%   } \\
+%   \relative {
+%     \oneVoice
+%     s1
+%     e'8 a b c d2
+%   }
+% >>
+
+% <<
+%   \relative {
+%     \mergeDifferentlyHeadedOn
+%     \mergeDifferentlyDottedOn
+%     c''8 d e d c d c4
+%     \shiftOn
+%     g'2 fis
+%   } \\
+%   \relative {
+%     c''2 c8. b16 c4
+%     e,2 r
+%   } \\
+%   \relative {
+%     \oneVoice
+%     s1
+%     e'8 a b c d2
+%   }
+% >>

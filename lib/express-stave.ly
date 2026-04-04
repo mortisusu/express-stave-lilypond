@@ -35,7 +35,7 @@
 %   https://musicnotation.org/wiki/notation-systems/express-stave-by-john-keller/
 
 \version "2.24.0"
-#(define ES_VERSION "1.26.03.30")
+#(define ES_VERSION "1.26.04.04")
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -289,6 +289,14 @@ closepath moveto -0.759 -0.482 lineto -0.885 -0.482 lineto -0.885 0.482 lineto -
        express-showpianoroll
        0))
 
+#(define double-stems?
+   (if (defined? 'express-multi-stems)
+       (= 1 express-multi-stems)
+       #f))
+
+#(define unify-dots? (and #t
+  double-stems?))  % only used when double-stems? is #t
+
 %%%% helper shorthand function to fix "no viable initial configuration found: may not find good beam slope" warnings
 %%%% usage: \beampos <y-start> <y-end>
 beampos =
@@ -439,7 +447,7 @@ ottava =
 % above the midpoint of the staff is down
 % below the midpoint of the staff is up
 
-#(define (esNoteHeads cfill midpoint)
+#(define (esNoteHeads cfill)
   (let* (
     (shape-base-straight 0)
     (shape-base-diag 1)
@@ -471,10 +479,6 @@ ottava =
 
       (dur (ly:event-property (event-cause grob) 'duration))
       (dur-log (ly:duration-log dur))
-
-      (notecol (ly:grob-parent   grob    X))
-      (stm     (ly:grob-object   notecol 'stem))
-      (ypos (ly:grob-staff-position grob))
       
       (note-style 'classic)
       (note-duration (if (<= dur-log 1) 'long 'regular))
@@ -545,15 +549,7 @@ ottava =
       (notehead-shifted (ly:stencil-translate notehead (cons 0 y-translate)))
       
     )
-    
-    (ly:grob-set-property! grob 'stencil notehead-shifted)
-    ;(ly:grob-set-property! grob (ly:stencil-extent notehead-shifted X))
-    
-    ;; DEFAULT STEM DIRECTION
-    (if (< ypos midpoint) 
-      (set! (ly:grob-property stm 'default-direction) 1)
-      (set! (ly:grob-property stm 'default-direction) -1)
-    )
+    notehead-shifted   
 	) ; let
 )))
 
@@ -579,11 +575,14 @@ ottava =
           (scaled-lines (ly:stencil-scale minim-lines 1 scale-y-factor))
   )
    `((regular . ,(ly:stencil-translate glyph (cons (/ glyph-width 2) 0)))
-     (long . ,(ly:stencil-translate 
+     (long . ,(if double-stems? 
+                  (ly:stencil-translate glyph (cons (/ glyph-width 2) 0))
+                  (ly:stencil-translate 
                     (ly:stencil-add glyph scaled-lines)
                     ; note: we're reducing 0.05 since it looks better when notes are shifted due to
                     ; a notehead collision. Not sure why this adjustment is required
-                    (cons (-(/ lines-width 2) 0.05) 0) ) 
+                    (cons (-(/ lines-width 2) 0.05) 0) ))
+
     ))
 )) 
 
@@ -683,6 +682,279 @@ ottava =
 ))
 
 
+
+%%%%%%%%%%%%%%%%%%%%%%
+% MERGE STAVES
+
+#(define (shift-merged-minims grob)
+   (let* (
+      (collision (ly:grob-parent grob X))
+      (merge-dotted? (ly:grob-property collision 'merge-differently-dotted #f))
+      (merge-headed? (ly:grob-property collision 'merge-differently-headed #f))
+    )
+     ;; 1. Verify the column is part of a collision
+     (when (and 
+              (grob::has-interface collision 'note-collision-interface)
+              merge-dotted? merge-headed?
+            )
+       (let (
+              (columns (ly:grob-array->list (ly:grob-object collision 'elements)))
+            )
+         ;; 2. More than 1 element means columns from different voices are interacting
+         ;; we'll only deal with exactly 2 voices. more than that are ignored.
+         (when (= (length columns) 2)
+           (let* ((other-column (if (eq? (car columns) grob)
+                        (cadr columns)
+                        (car columns)))
+                        
+                  (my-heads (ly:grob-object grob 'note-heads))
+                  (my-head (and (ly:grob-array? my-heads)
+                                   (> (ly:grob-array-length my-heads) 0)
+                                   (ly:grob-array-ref my-heads 0)))
+
+                  (other-heads (ly:grob-object (car columns) 'note-heads))
+                  (other-head (and (ly:grob-array? other-heads)
+                                   (> (ly:grob-array-length other-heads) 0)
+                                   (ly:grob-array-ref other-heads 0)))
+
+                  (stem (ly:grob-object grob 'stem))
+                  (stem-dir (ly:grob-property stem 'direction))
+
+                  (shift-current (ly:grob-property grob 'force-hshift))
+                  (shift-amount (if (> stem-dir 0) -0.2 0))
+                  )
+             ;; 3. Check if the note is a minim (duration-log = 1)
+             (when (and my-head other-head
+                        (eqv? (ly:grob-property my-head 'duration-log) 1)
+                        (not (eqv? (ly:grob-property other-head 'duration-log) 1))
+                    )
+               ;; 4. Apply your desired shift
+               ; (debug D-ALL "shift: stem-dir: ~a, shift-current: ~a, shift-amount: ~a" stem-dir shift-current shift-amount)
+               (ly:grob-set-property! grob 'force-hshift shift-amount)
+)))))))
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% DOUBLE STEMS
+
+#(define (cn-note-heads-from-grob grob default)
+   ;; Takes a grob like a Stem and returns a list of
+   ;; NoteHead grobs or default.
+   (let* ((heads-array (ly:grob-object grob 'note-heads))
+          (heads-list (if (ly:grob-array? heads-array)
+                          (ly:grob-array->list heads-array)
+                          ;; should never/rarely? happen:
+                          default)))
+     heads-list))
+
+
+#(define (cn-grob-edge grob positive)
+   ;; Takes a grob and returns the edge of the grob in positive
+   ;; or negative direction (up or down), positive arg is boolean.
+   (let* ((offset (ly:grob-property grob 'Y-offset))
+          (extent (ly:grob-property grob 'Y-extent))
+          (extent-dir (if positive (cdr extent) (car extent))))
+     (+ offset extent-dir)))
+
+#(define (cn-grobs-edge grobs positive)
+   ;; Takes a list of grobs and positive, a boolean of whether the
+   ;; direction we care about is positive/up or not/down, and returns
+   ;; the furthest edge of the grobs in that direction.
+   (let* ((comparator (if positive > <))
+          (final-edge
+           (fold (lambda (g prev-edge)
+                   (let ((this-edge (cn-grob-edge g positive)))
+                     (if (comparator this-edge prev-edge)
+                         this-edge
+                         prev-edge)))
+                 (cn-grob-edge (car grobs) positive)
+                 (cdr grobs))))
+     final-edge))
+
+#(define (dots-on-stem grob dot-grob dot-count stem-stil)
+  (let*
+    (
+      (dot-col (ly:grob-parent dot-grob X))
+      (dot-padding (ly:grob-property dot-col 'padding))
+
+      (dir (ly:grob-property grob 'direction))
+      (up-stem (= 1 dir))
+
+      (x-shift 0.9)
+       
+      (x-pos (+ (cdr (ly:stencil-extent stem-stil X)) dot-padding)) ; Right edge
+      
+       ;; Fetch the standard augmentation dot
+      (dot-stil (grob-interpret-markup grob (markup #:musicglyph "dots.dot")))
+      
+      (dot-y-ext (ly:stencil-extent dot-stil Y))
+      (half-dot-height (/ (- (cdr dot-y-ext) (car dot-y-ext)) 2))
+
+      (note-heads (cn-note-heads-from-grob grob '()))
+      (heads-edge (cn-grobs-edge note-heads up-stem))
+
+      (stem-y-extent (ly:grob-property grob 'Y-extent))
+      (stem-tip (if up-stem (cdr stem-y-extent) (car stem-y-extent)))
+      (y-pos (if up-stem
+                  (- stem-tip half-dot-height)
+                  (+ stem-tip half-dot-height)
+      ))
+       
+       ;; Move the dot to the top right of the stem
+      (positioned-dot (ly:stencil-translate dot-stil (cons x-pos y-pos)))
+    )
+
+    (while (> dot-count 0)
+      (set! stem-stil (ly:stencil-add stem-stil positioned-dot))
+      (set! positioned-dot (ly:stencil-translate positioned-dot (cons x-shift 0)))
+      (set! dot-count (- dot-count 1))
+    )
+    
+    (ly:grob-set-property! grob 'stencil stem-stil)
+    ;(ly:grob-set-property! grob 'X-extent
+    ;                       (ly:stencil-extent (ly:grob-property grob 'stencil) 0))
+
+  )
+)
+
+#(define (cn-multi-stem grob duration-log)
+   (let*
+    ((stem-stil (ly:stem::print grob))
+     (dir (ly:grob-property grob 'direction))
+     (up-stem (= 1 dir))
+     (stem-thickness (ly:grob-property grob 'thickness))
+
+     ;; --- X / width / spacing ---
+
+     (stem-x-extent (ly:grob-property grob 'X-extent))
+     (stem-width (abs (- (car stem-x-extent) (cdr stem-x-extent))))
+
+     ;; by default second stem is 1.5 times as thick as standard stem
+     (width-scale (ly:grob-property grob 'cn-double-stem-width-scale stem-thickness))
+     (stem2-width (* stem-width width-scale))
+     ;(stem2-width stem-thickness)
+
+     ;; amount to move the edges outward to achieve 2nd stem width
+     (width-shift (/ (abs (- stem-width stem2-width)) 2))
+
+     (stem-left-edge (car stem-x-extent))
+     (stem-right-edge (cdr stem-x-extent))
+
+     ;; spacing is 3.5 times stem-width by default
+     (spacing-scale (ly:grob-property grob 'cn-double-stem-spacing 2.4))
+     (spacing-shift (* dir spacing-scale stem-width))
+     (stem-y-extent (ly:grob-property grob 'Y-extent))
+
+     (note-heads (cn-note-heads-from-grob grob '()))
+     (heads-edge (cn-grobs-edge note-heads up-stem))
+     (stem-tip (if up-stem (cdr stem-y-extent) (car stem-y-extent)))
+     
+     (stem2-y-extent (if up-stem
+                         (cons heads-edge stem-tip)
+                         (cons stem-tip heads-edge)))
+
+     (blot (ly:output-def-lookup (ly:grob-layout grob) 'blot-diameter))
+     (shift-count 1)
+     )
+
+    (while (<= duration-log 1)
+      (let* (
+          (shift (* shift-count spacing-shift))
+          (stem2-left-edge (+ shift stem-left-edge (* -1 width-shift)))
+          (stem2-right-edge (+ shift stem-right-edge width-shift))
+
+          ;; Note that SVG output needs extents pairs to be in proper ascending order
+          (stem2-x-extent (cons stem2-left-edge stem2-right-edge))
+          (stem2-stil (ly:round-filled-box stem2-x-extent stem2-y-extent blot))
+        )
+        (set! duration-log (+ duration-log 1))
+        (set! shift-count (+ shift-count 1))
+        (set! stem-stil (ly:stencil-add stem-stil stem2-stil))
+      )
+    )
+
+    (ly:grob-set-property! grob 'stencil stem-stil)
+    ;; X-extent needs to be set here because its usual callback
+    ;; ly:stem::width doesn't take the actual stencil width into account
+    (ly:grob-set-property! grob 'X-extent
+                           (ly:stencil-extent (ly:grob-property grob 'stencil) 0))
+
+    stem-stil
+    ))
+
+
+% #(define (cn-multiply-details details multiplier skip-list)
+%    ;; multiplies each of the values of a details property
+%    ;; (e.g. of the stem grob) by multiplier, except for
+%    ;; skip-list, a list of symbols, e.g. '(stem-shorten)
+%    (define multiply-by (lambda (x) (* x multiplier)))
+%    (map
+%     (lambda (dt)
+%       (let ((head (car dt))
+%             (vals (cdr dt)))
+%         (cons head (if (memq head skip-list)
+%                        vals
+%                        (map multiply-by vals)))))
+%     details))
+
+% #(define (cn-get-base-staff-space grob)
+%    ;; Takes a grob and returns the custom StaffSymbol property
+%    ;; cn-base-staff-space.  Silently falls back to the default of 0.75.
+%    (cn-staff-symbol-property grob 'cn-base-staff-space 0.75))
+
+#(define (cn-customize-stem grob)
+   ;; Lengthen all stems to undo staff compression side effects,
+   ;; and give half notes double stems.
+   (let* (
+          ; (bss-inverse (/ 1 (cn-get-base-staff-space grob))) ; ORIGINAL
+          
+          ; (bss-inverse (/ 1 express-staff-space))
+          ; (deets (ly:grob-property grob 'details))
+          ; (deets2 (cn-multiply-details deets bss-inverse '(stem-shorten)))
+          
+
+          
+         )
+
+     ;(ly:grob-set-property! grob 'details deets2)
+
+     (when double-stems? (let* (
+          (duration-log (ly:grob-property grob 'duration-log))
+          (note-heads (ly:grob-object grob 'note-heads))
+          (first-head (ly:grob-array-ref note-heads 0))
+          (event (ly:grob-property first-head 'cause))
+          (duration (ly:event-property event 'duration))
+          (dot-count (if (ly:duration? duration) 
+                         (ly:duration-dot-count duration) 
+                         0))
+
+          (stem-stil #f)
+      )
+        ;; double stems for half notes: tricking the system by specifying duration-log = 1 (half note)
+        (when (and (number? duration-log) (< duration-log 1))
+          (ly:grob-set-property! grob 'duration-log 1))
+
+        (when (>= 1 duration-log) 
+          (set! stem-stil (cn-multi-stem grob duration-log)))
+
+        (when (and unify-dots? (> dot-count 0)) (let* (
+            (dot-grob (ly:grob-object first-head 'dot))
+          )
+            (dots-on-stem grob dot-grob dot-count (or stem-stil (ly:stem::print grob)))
+        ))
+     ))
+))
+
+#(define (cn-make-stem-grob-callback)
+   ;; Make sure omit is not in effect (i.e. stencil is not #f)
+   ;; and the stem has a notehead (i.e. is not for a rest,
+   ;; rest grobs have stem grobs that have no stencil)
+   (lambda (grob)
+     (if (and (ly:grob-property-data grob 'stencil)
+              (not (null? (ly:grob-object grob 'note-heads))))
+
+         (cn-customize-stem grob))))
+
+
 %%%%%%%%%%%%%%%%%%%%%%%
 % STAFF DEFINITIONS
 % each staff type gets its own set of overrides, etc.
@@ -749,9 +1021,7 @@ ottava =
              ((and (number? dir) (= dir DOWN)) (- shift))
              (else 0))))
   }
-
-
-  
+ 
   \context {
     \Staff
     staffLineLayoutFunction = #ly:pitch-semitones    
@@ -760,7 +1030,7 @@ ottava =
     \override StaffSymbol.ledger-positions = #'(-6 0 6)
     \override StaffSymbol.ledger-extra = #1.6
     % \override Stem.no-stem-extend = ##t
-    \override NoteHead.before-line-breaking = #(esNoteHeads express-pianoforte 0)
+    \override NoteHead.stencil = #(esNoteHeads express-pianoforte)
 
     \override Stem.length-fraction = #(/ 1.1 express-staff-space)  % the relative stem leangth (default is 1)
     \override Stem.thickness = #0.87  % Default is 1.3; lower is thinner
@@ -774,7 +1044,19 @@ ottava =
     \override Stem.note-collision-threshold = #2    % collision of noteheads on the same stem
     \override NoteCollision.note-collision-threshold = #2 % collision of different voices on the same staffline
 
+    % \override NoteColumn.before-line-breaking = #shift-merged-minims
 
+    \override Stem.before-line-breaking = #(cn-make-stem-grob-callback)
+
+    #(if unify-dots?
+    #{
+      % hiding dots, since we're showing them in the stem instead
+      \override Dots.stencil = ##f 
+    #}
+    #{ #}
+    )
+    
+    
     #(if (= thick-staffline 1)
       #{
         \override StaffSymbol.thickness = #1.8

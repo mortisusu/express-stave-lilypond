@@ -237,6 +237,7 @@ def parse(paths, size, translatex, translatey, rowlen):
                 ymax = mymax(ymax, op.y)
             
             # print the bounds to stderr:
+            info(f"width: {xmax - xmin:.3g}, height: {ymax - ymin:.3g}")
             info(f"Bounding Box: ({xmin:.3g}, {ymin:.3g}), ({xmax:.3g}, {ymax:.3g})")
             info("")
 

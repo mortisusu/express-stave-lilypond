@@ -99,19 +99,19 @@ sv =  s8\sustainOff\sustainOn
   \barNumberCheck#5
   
   c8\( bf c bf ef bf af bf af ~ |
-  gf2. \hshift #0.9 gf4. |
+  gf2. gf4. |
   ef2. ef4. |
   df2. c4. |
 
   af8 gf af gf4. f4.\) ~ |
-  ef2. \hshift #0.8 ef4. |
+  ef2. ef4. |
   df2. c4. |
   bf2. a4. |
 
   f8\( f gf f bf f ef f ef ~ |
   df2.~df4. |
   bf2.^~bf4. |
-  \hshift 0.8 af2. gf4. |
+  af2. gf4. |
 
   ef8 df ef df4. c4. |
   bf2. af4.|
@@ -398,7 +398,7 @@ lhDown= {\lhDown \relative c, \lhDownGrey }
   cs8. cs,16 gs' e e'8. e,16 cs' gs gs'8. gs,16 e' b |
   \clef treble \key cs \minor \stemUp
   cs16\( e gs b8.\) e,16\( gs b cs8.\)  gs16\( b cs e8.\)  |
-  \hshift #0.6 b4.^\markup\italic"più cresc." cs e |
+  b4.^\markup\italic"più cresc." cs e |
 
   gs4.( fs2.) |
   s8*9 |
@@ -412,7 +412,7 @@ lhDown= {\lhDown \relative c, \lhDownGrey }
   \stemUp fs2.( a4 cs8) | \stemNeutral
   s8*9 |
   fs,16 \( a cs\cu fs cs' a\)\cl fs,\( a cs\cu fs cs' a\)\cl e,\( a cs e\cu cs' cs,\)\cl |
-  \hshift #0.6 e4. ds cs |
+  e4. ds cs |
 
   \ottava #0
   fs,,2.( a4 cs8) |

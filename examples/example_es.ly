@@ -73,21 +73,20 @@ msg =
   \stemUp <a, c dis fis> \stemNeutral <ais, cis e g> <b, d f gis> _\markup\italic"rests" r8 r16 r16 \bar "||" |
 
   % \snhs #'(0 -2 0 0 0 0 0 2)   % manual shifting of crammed notes. uncomment to see the effect
-  <c' d' e' f' g' a' b' c''>4 \mf
-  <c'' d'' e'' f'' g'' a'' b'' c'''>4 
+  <c' d' e' f' g' a' b' c''>2 \mf
+  <c'' d'' e'' f'' g'' a'' b'' c'''>8 
   _\markup\italic"crammed chords"
-  <cis''' dis''' f''' fis''' gis''' ais'''>4
+  <cis''' dis''' f''' fis''' gis''' ais'''>8
   % r4 
   <e'' fis'' b' cis''>8
   <e'' dis'' cis'' c''>8 |
   c'16 b a g  f16 e d c  c16 b, a, g,  f,16 e, d, c, |
-  r4
   \clef bass
-  d'4 _\markup\italic"clef changes"
+  <d' ais>16 _\markup\italic"clef changes"
   \clef alto
-  d'4
+  <d' ais>2.
   \clef treble
-  d'4 |
+  <d' ais>8. |
   cis'16 _\markup\italic"low notes " ais16 gis fis dis cis ais, gis, fis, dis, cis, ais,, 
   gis,, fis,, 
   \revert Stem.details.beamed-lengths r8 |
@@ -113,7 +112,7 @@ msg =
   
   \clef bass
   g,8 g, g, g,  | 
-  c''2 c''4  \fermata r4 |
+  <c'' a' f'>2. c''4  \fermata |
   a16 _\markup\italic"high notes" b c' d' e' f' g' a'  
   \override Stem.details.beamed-lengths = #'(6.5) b' c'' d'' e'' 
   \revert Stem.details.beamed-lengths r4 |
