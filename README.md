@@ -4,7 +4,7 @@
 
 ## About This Project
 
-This library allows **LilyPond** users to convert `.ly` files to the **Express Stave** alternative notation format. It supports both the Express Stave **Pianoforte** and **original** formats, applying **Pianoforte** by default.
+This library allows **LilyPond** users to convert `.ly` files to the **Express Stave** alternative notation format.
 
 Converting a notation to the Express Stave format is easy: Just add a single line at the start of your `.ly` notation file:
 
@@ -62,9 +62,9 @@ This library aims at minimal effort conversion of existing `.ly` files. Simply i
 
 > **NOTE:** Change the path to the correct relative/absolute position of the file, e.g. `../lib/express-stave.ly`
 
-### Expres Stave Original Support
+### Express Stave Original Support
 
-By default, the script converts to the **Express Stave Pianoforte** notation. In order to use the **Express Stave Original** notation, add `express-pianoforte=0` **before** including the library:
+By default, the script converts to the **Express Stave Pianoforte** notation (where black noteheads represent white notes and vice versa). In order to use the **Express Stave Original** notation (where white noteheads represent white piano keys), add `express-pianoforte=0` **before** including the library:
 
   ```
   express-pianoforte=0
@@ -155,7 +155,7 @@ Also, it is recommended to enable PDF point and click: comment out any `\pointAn
 
 You may need to modify existing `\clef` and `\ottava` commands to better fit the Express Stave note positions
 
-Express Stave overrides the `\clef` command and supports the following clefs:
+This library overrides the `\clef` command and supports the following clefs:
 
   `\clef treble` translates to the Express Stave **B (treble)** clef
 
@@ -164,7 +164,7 @@ Express Stave overrides the `\clef` command and supports the following clefs:
   `\clef bass` translates to the Express Stave **F (bass)** clef
 
 
-#### Spacing
+#### Spacing Optimization
 
 To control the space between note line systems, add the following to the ``\paper`` section:
 
