@@ -3,9 +3,10 @@
 % dummy definitions in case we want to comment-out express-stave
 snhs = #(define-music-function (offsets) (list?))
 
-% #(define express-staff-space 1.5) % uncomment to modify the notation space
-% #(define express-showpianoroll 1) % uncomment to show a small pianoroll to the left of the staff lines
-#(define express-pianoforte 1) % uncomment for express stave original notation (white piano keys = white notes)
+% express-staff-space=1.5 % uncomment to modify the notation space
+% express-showpianoroll=1 % uncomment to show a small pianoroll to the left of the staff lines
+% express-pianoforte=0 % uncomment for express stave original notation (white piano keys = white notes)
+% express-multi-stems=0 % uncomment to disable multi-stems (default is 2)
 \include "../lib/express-stave.ly" % comment-out to show classical notation
 
 \header {
@@ -112,7 +113,7 @@ msg =
   
   \clef bass
   g,8 g, g, g,  | 
-  <c'' a' f'>2. c''4  \fermata |
+  <c'' g'>2. c''4  \fermata |
   a16 _\markup\italic"high notes" b c' d' e' f' g' a'  
   \override Stem.details.beamed-lengths = #'(6.5) b' c'' d'' e'' 
   \revert Stem.details.beamed-lengths r4 |

@@ -1,8 +1,7 @@
 \version "2.24.0"
 
-% #(define express-staff-space 0.7)
-% #(define express-pianoforte 0)
-% #(define express-showpianoroll 1)
+% express-pianoforte=0
+% express-showpianoroll=1
 \include "../lib/express-stave.ly"
 
 \header {

@@ -64,25 +64,41 @@ This library aims at minimal effort conversion of existing `.ly` files. Simply i
 
 ### Expres Stave Original Support
 
-By default, the script converts to the **Express Stave Pianoforte** notation. In order to use the **Express Stave Original** notation, add `#(define express-pianoforte 0)` **before** including the library:
+By default, the script converts to the **Express Stave Pianoforte** notation. In order to use the **Express Stave Original** notation, add `express-pianoforte=0` **before** including the library:
 
   ```
-  #(define express-pianoforte 0)
+  express-pianoforte=0
   \include "/path/to/express-stave.ly"
   ```
 
 ### Displaying The Pianoroll
 
-It is possible to display a pianoroll mark to the left of the staff lines. This can assist in identifying which piano keys each note refers to. To display, add `#(define express-showpianoroll 1)` **before** including the library:
+It is possible to display a pianoroll mark to the left of the staff lines. This can assist in identifying which piano keys each note refers to. To display, add `express-showpianoroll=1` **before** including the library:
 
 <div style="display: flex; align-items: center;">
   <div style="width:100%">
-    <pre><code>  #(define express-showpianoroll 1)
-  \include "/path/to/express-stave.ly"
+    <pre><code>express-showpianoroll=1
+\include "/path/to/express-stave.ly"
 
 </code></pre>
   </div>
   <img alt="" src="./assets/docs/pianoroll.png" style="margin-left: 20px;" height="140">
+</div>
+
+## Multi-Stems
+
+By default, Minims (half notes) and Semibreves (whole notes) are engraved as having two stems and three stems. For dotted notes, the dots are shown beside the tip of the notehead, instead of being engreaved to the side of each notehead. This default behavior can be controlled by adding `express-multi-stems=[0-2]` **before** including the library:
+
+<div style="display: flex; align-items: center;">
+  <div style="width:100%">
+    <pre><code>express-multi-stem=2 % shows both multi-stems and unified dots (default)
+express-multi-stem=1 % shows multi-stems, and dots beside each notehead
+express-multi-stem=0 % no multi-stems, and dots beside each notehead
+\include "/path/to/express-stave.ly"
+
+</code></pre>
+  </div>
+  <img alt="" src="./assets/docs/multi-stems.png" style="margin-left: 20px;" height="120">
 </div>
 
 ## Examples
@@ -178,7 +194,7 @@ To control the vertical staff spacing (that's the space between the three staff 
 
 <div style="display: flex; align-items: center;">
   <div style="width:100%">
-    <pre><code>#(define express-staff-space 1.2) % add BEFORE including express-stave.ly
+    <pre><code>express-staff-space=1.2 % add BEFORE including express-stave.ly (default is 1)
 \include "../lib/express-stave.ly"
 </code></pre>
   </div>
