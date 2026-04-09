@@ -87,7 +87,7 @@ It is possible to display a pianoroll mark to the left of the staff lines. This 
 
 ## Multi-Stems
 
-By default, Minims (half notes) and Semibreves (whole notes) are engraved as having two stems and three stems. For dotted notes, the dots are shown beside the tip of the notehead, instead of being engreaved to the side of each notehead. This default behavior can be controlled by adding `express-multi-stems=[0-2]` **before** including the library:
+By default, Minims (half notes) and Semibreves (whole notes) are engraved as having two stems and three stems. For dotted notes, the dots are shown beside the tip of the note stem, instead of being engraved to the side of each notehead. This default behavior can be controlled by adding `express-multi-stems=[0-2]` **before** including the library:
 
 <div style="display: flex; align-items: center;">
   <div style="width:100%">

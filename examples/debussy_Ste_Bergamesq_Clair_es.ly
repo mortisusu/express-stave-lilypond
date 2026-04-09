@@ -35,7 +35,7 @@
        (padding . 0)
        (stretchability . 0))
        
-  #(layout-set-staff-size 16)
+  #(layout-set-staff-size 18)
   % system-count = #12
   % obsolete-between-system-padding = 1  system-system-spacing.padding = #(/ obsolete-between-system-padding staff-space)  score-system-spacing.padding = #(/ obsolete-between-system-padding staff-space)
   ragged-last-bottom = ##f
