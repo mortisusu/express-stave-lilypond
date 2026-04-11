@@ -12,7 +12,9 @@ snhs = #(define-music-function (offsets) (list?))
 \header {
 	title = 	"Express Stave Demo"
   subtitle = #(if (and (defined? 'express-pianoforte) (= express-pianoforte 1)) "Pianoforte Notation" "Orignal Notation")
-	opus = 	\markup \tiny \line {"Library Version: " #ES_VERSION }
+	opus = 	\markup \tiny \line { 
+    #(if (defined? 'ES_VERSION) (string-append "Library Version: " ES_VERSION) "(Library disabled)") 
+  }
 	composer =	"Express Stave by John Keller"
 	style =	"Music Style"
   footer = "Express Stave"
@@ -25,8 +27,9 @@ snhs = #(define-music-function (offsets) (list?))
        (padding . 1)
        (stretchability . 0))
 
-  #(layout-set-staff-size 17.55) % general staff size
+  % #(layout-set-staff-size 17.55) % general staff size
 }
+
 
 \layout {
   \context {
@@ -70,7 +73,7 @@ msg =
    f'2 g' |
    \break
 
-  <c' e' g'>4 _\markup\italic"chords" \< <c'' e'' g''>4 -- <c''' e''' g'''>4  -> r4 \! |
+  <c' e' g'>4 -. _\markup\italic"chords" \< <c'' e'' g''>4 -- <c''' e''' g'''>4  -> r4 \! |
   \stemUp <a, c dis fis> \stemNeutral <ais, cis e g> <b, d f gis> _\markup\italic"rests" r8 r16 r16 \bar "||" |
 
   % \snhs #'(0 -2 0 0 0 0 0 2)   % manual shifting of crammed notes. uncomment to see the effect
@@ -82,15 +85,15 @@ msg =
   <e'' fis'' b' cis''>8
   <e'' dis'' cis'' c''>8 |
   c'16 b a g  f16 e d c  c16 b, a, g,  f,16 e, d, c, |
+  r4
   \clef bass
-  <d' ais>16 _\markup\italic"clef changes"
+  <d' ais>4 _\markup\italic"clef changes"
   \clef alto
-  <d' ais>2.
+  <d' ais>4
   \clef treble
-  <d' ais>8. |
-  cis'16 _\markup\italic"low notes " ais16 gis fis dis cis ais, gis, fis, dis, cis, ais,, 
-  gis,, fis,, 
-  \revert Stem.details.beamed-lengths r8 |
+  <d' ais>4 | 
+  r4.  d16 _\markup\italic"low notes" cis a, gis, f, dis, c, ais,, g,, fis,, 
+  |
   \break
   \clef treble
   
@@ -104,7 +107,7 @@ msg =
   g,8 g, g, g, \ottava #0 | 
   a'16 ais' c'' cis'' dis'' e'' fis'' g''
   % cis'' e''
-  \tiny a'16 ais'  _\markup\italic\normalsize"tiny notes" c'' cis'' dis'' e'' fis'' g'' \normalsize 
+  \tiny a'16 _\markup\italic\normalsize"tiny notes" ais'  c'' cis'' dis'' e'' fis'' g'' \normalsize 
   
   \stemNeutral
   % \huge a'32 ais' b' c'' cis'' d'' dis'' e'' f'' fis'' g'' gis'' \normalsize 
@@ -113,10 +116,29 @@ msg =
   
   \clef bass
   g,8 g, g, g,  | 
-  <c'' g'>2. c''4  \fermata |
-  a16 _\markup\italic"high notes" b c' d' e' f' g' a'  
-  \override Stem.details.beamed-lengths = #'(6.5) b' c'' d'' e'' 
-  \revert Stem.details.beamed-lengths r4 |
+
+  <c'' g'>2. e''4  \fermata |
+  r4 e'16 _\markup\italic"high notes" f' g' a'  b' c'' d'' e'' 
+  r4 | 
+  \break
+
+  \grace {cis''8.} e''4 _\markup\italic"graces"
+  \slashedGrace {c''8} e''4
+  \appoggiatura {ais'8.} e''4
+  \acciaccatura  {f''8} e''4 |
+  c8 _\markup\italic"flags" s16 c16 s16 c32 s16 c64 s16
+  b8 s16 b16 s16 b32 s16 b64
+
+  s64*6|
+
+  b'2. s16 f''8.|
+  g,4. a4. s32*5 b16. |
+
+  r1 |
+  r1 |
+  
+
+
   \break
   c''1 _\msg"C" _\msg"0"  cis'' _\msg"I" _\msg"1" d'' _\msg"D" _\msg"2" dis'' _\msg"J" _\msg"3"
   e'' _\msg"E" _\msg"4" f'' _\msg"F" _\msg"5" fis'' _\msg"K" _\msg"6" g'' _\msg"G" _\msg"7"
