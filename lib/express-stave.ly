@@ -38,7 +38,7 @@
 %   https://gitlab.com/paulmorris/lilypond-clairnote
 
 \version "2.24.0"
-#(define ES_VERSION "1.26.04.11")
+#(define ES_VERSION "1.26.04.12")
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -77,6 +77,10 @@
    (if (defined? 'express-multi-stems)
        (> express-multi-stems 1)
        #f))
+
+% the default notehead width factor.
+% note: do not make this any bigger, as it causes note unification to fail. See comment when using below.
+#(define notehead-width 1.3)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%% HELPER FUNCTIONS - USABLE BY LILYPOND USERS
@@ -150,15 +154,27 @@ snhs =
           (glyph-y-ext (ly:stencil-extent glyph Y))
           (glyph-height (- (cdr glyph-y-ext) (car glyph-y-ext)))
 
-          (x-translate (- 0 (car glyph-x-ext) (/ glyph-width 2)))
-          (y-translate (- 0 (car glyph-y-ext) (/ glyph-height 2)))
+          (x-translate (- 0 (car glyph-x-ext) (* glyph-width 0.5)))
+          (y-translate (- 0 (car glyph-y-ext) (* glyph-height 0.5)))
           (res (ly:stencil-translate glyph (cons x-translate y-translate)))
           ;(res (ly:stencil-scale translated 1 1)) ;(/ 1.1 glyph-height)
       )
 
-  ; (debug D-ALL "center-glyph x: ~a, y: ~a, width: ~a, height: ~a" (ly:stencil-extent res X) (ly:stencil-extent res Y) (stencil-size res X) (stencil-size res Y))
+  ;(debug D-ALL "center-glyph x: ~a, y: ~a, width: ~a, height: ~a" (ly:stencil-extent res X) (ly:stencil-extent res Y) (stencil-size res X) (stencil-size res Y))
   res
 ))
+
+% Retrieve a value from the grob's 'details alist.
+#(define (get-detail grob name)
+   (assoc-get name (ly:grob-property grob 'details)))
+
+
+#(define (rest-y-offset amount)
+   (lambda (grob)
+     (let ((dir (ly:grob-property grob 'direction)))
+       (if (number? dir)
+           (* dir amount express-staff-space)
+           0))))
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -276,10 +292,6 @@ lineto 1.38 1.174 lineto 1.396 1.501 lineto 0.006 1.501 closepath
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% NOTEHEADS
 
-% the default notehead width.
-% note: do not make this any bigger, as it causes note unification to fail. See comment below.
-#(define notehead-width 1.3)
-
 % when creating a notehead stencil, we center and scale it so all noteheads have EXACTLY the same width.
 % Otherwise, note unification may fail (you will see duplicate noteheads). 
 % This happens when different nothead glyphs are unified (e.g. white and black noteheads).
@@ -292,8 +304,10 @@ lineto 1.38 1.174 lineto 1.396 1.501 lineto 0.006 1.501 closepath
           (stencil-width (stencil-size stencil X))
           (factor (/ notehead-width stencil-width))
           (stencil (ly:stencil-scale stencil (* factor scaleX) (* factor scaleY)))
+          (stencil (center-glyph stencil))
         )
-    (center-glyph stencil)
+    ;(debug D-ALL "notehead stencil width: ~a, height: ~a" (extent-size (ly:stencil-extent stencil X)) (extent-size (ly:stencil-extent stencil Y) ))
+    stencil
 ))
 
 #(define (create-notehead path)
@@ -393,8 +407,9 @@ clef =
           (else #f)))
 
       ; change clefs are smaller
+      (change-scale (get-detail grob 'es-change-scale))
       (stencil (cond
-          ((and stencil change?) (ly:stencil-scale stencil 0.85 0.85))
+          ((and stencil change?) (ly:stencil-scale stencil change-scale change-scale))
           ((not stencil) default)
           (else stencil)))
     )
@@ -987,33 +1002,35 @@ ottava =
           (ly:grob-set-property! grob 'duration-log 1))
 
         (when (>= 1 duration-log) 
-          (ly:grob-set-property! grob 'thickness 1.3)
+          (ly:grob-set-property! grob 'thickness (get-detail grob 'es-multi-thickness))
           (cn-multi-stem grob duration-log))
      ))
 ))
 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% GENERAL DEFINITIONS AND OVERRIDES
+
 %%%%%%%%%%%%%%%%%%%%%%%
-% STAFF DEFINITIONS
-% each staff type gets its own set of overrides, etc.
-
-#(define thick-staffline 1)
-
-
-% override grace appearance, and make it slightly bigger. Couldn't find a simple definition. 
-% There is an elegant way to define using: 
+% GRACE NOTES (Grace, SlashedGrace, Appoggiatura, Acciaccatura)
+% overriding grace appearance, and making it slightly bigger.
+% There is an elegant way to define grace appearance using: 
 %   $(add-grace-property 'Voice 'NoteHead 'font-size 2)
-% but setting things like that seems to be overridden by other definitions
-% The approach below is ugly but working, as described here:
+
+% but setting things like that seems to be overridden by other definitions, so it doesn't work.
+% Instead, I'm using the approach below which is ugly but working, as described here:
 % https://music.stackexchange.com/questions/101066/changing-the-size-of-all-grace-notes-with-lilypond
 
 esGraceOn = {
   \override NoteHead.font-size = #-2
-  \override Stem.length = #7
+  \override Stem.length-fraction = #1.1
 }
 
 esGraceOff = {
   \revert NoteHead.font-size
-  \revert Stem.length
+  \revert Stem.length-fraction
 }
 
 startGraceMusic = { 
@@ -1052,8 +1069,7 @@ stopAcciaccaturaMusic = {
   <>)
 }
 
-
-
+%%%%%%%%%%%%%%%%%%%%%%%
 
 \paper {
   % #(layout-set-staff-size 16) % general staff size
@@ -1063,7 +1079,6 @@ stopAcciaccaturaMusic = {
          (set! indent (* 0 mm))
          (set! short-indent (* 0 mm))))
 }
-
 
 \header {
     tagline = \markup \center-column \tiny {
@@ -1081,16 +1096,10 @@ stopAcciaccaturaMusic = {
       #(if (= express-showpianoroll 1)
        #{
         % moving the bar numbers so they won't collide with the pianoroll stencil
-      \override BarNumber.extra-offset = #'(2 . 0)
+        \override BarNumber.extra-offset = #'(2 . 0)
       #})
 
-      #(if (= thick-staffline 1)
-      #{
-        \override BarNumber.Y-offset = #(* 6 express-staff-space) % compensating for thicker staff lines (which causes the position to be wrong)
-      #}
-      #{ #}
-      )
-      
+      \override BarNumber.Y-offset = #(* 6 express-staff-space) % compensating for thicker staff lines (which causes the position to be wrong)
       \override StaffGrouper.staff-staff-spacing.padding = 0.5
       \override Hairpin.height = #(/ 0.6 express-staff-space) % crescendo, decrescendo height. default is 0.6666
       \override Flag.stencil = % making flags slightly shorter
@@ -1099,49 +1108,29 @@ stopAcciaccaturaMusic = {
               (ly:stencil-scale original 1.0 0.8)))
 
     }
-
-
-  \context {
-    \Voice
-    \override Rest.Y-offset =
-      #(lambda (grob)
-         (let ((dir (ly:grob-property grob 'direction))
-               (shift (* express-staff-space 3)))
-           (cond
-             ((and (number? dir) (= dir UP)) shift)
-             ((and (number? dir) (= dir DOWN)) (- shift))
-             (else 0))))
-
-    \override MultiMeasureRest.Y-offset =
-      #(lambda (grob)
-         (let ((dir (ly:grob-property grob 'direction))
-               (shift (* express-staff-space 2)))
-           (cond
-             ((and (number? dir) (= dir UP)) shift)
-             ((and (number? dir) (= dir DOWN)) (- shift))
-             (else 0))))
-  }
  
   \context {
     \Staff
+    \override Stem.length-fraction = #(/ 0.9 express-staff-space)  % the relative stem leangth (default is 1)
+    % \override Stem.length = #(/ 8.0 express-staff-space)
+    % \override Stem.details.beamed-lengths = #(map (lambda (x) (* x 1.2)) '(3.26 3.5 3.6))
+    \override Stem.thickness = #0.87  % Default is 1.3; lower is thinner
+    \override Stem.details.es-multi-thickness = #1.2 % multi-stem thickness
+    \override Beam.beam-thickness = #0.65  % Default is 0.48
+    \override Beam.length-fraction = #1.2 % the relative distance between beams lines (e.g. in 16th note). Default is 1.
+    \override StaffSymbol.thickness = #1.8
+    \override Clef.details.es-change-scale = #0.85  % the relative size of clef symbols when displayed during change
+
+    %%%%%%%%%%%%
+
     staffLineLayoutFunction = #ly:pitch-semitones    
     \override StaffSymbol.line-positions = #'( -6 0 6 )
     % \override StaffSymbol.line-positions = #'( -6 -5 -4 -3 -2 -1  -0.1 0 0.1 1 2 3 4 5 6 ) ; used for debugging
     \override StaffSymbol.ledger-positions = #'(-6 0 6)
     \override StaffSymbol.ledger-extra = #1.6
-    % \override Stem.no-stem-extend = ##t
     \override NoteHead.stencil = #(esNoteHeads)
-
-    \override Clef.stencil = #(grob-transformer 'stencil clef-stencil-callback)
-
-    \override Stem.length-fraction = #(/ 0.9 express-staff-space)  % the relative stem leangth (default is 1)
-    % \override Stem.length = #(/ 8.0 express-staff-space)
-    % \override Stem.details.beamed-lengths = #(map (lambda (x) (* x 1.2)) '(3.26 3.5 3.6))
-    \override Stem.thickness = #0.87  % Default is 1.3; lower is thinner
+    \override Clef.stencil = #(grob-transformer 'stencil clef-stencil-callback) 
     \override StaffSymbol.staff-space = #express-staff-space
-
-    \override Beam.beam-thickness = #0.65  % Default is 0.48
-    \override Beam.length-fraction = #1.2 % the relative distance between beams lines (e.g. in 16th note). Default is 1.
 
     % since we are using a chromatic scale, we change the collision threshold from 1 to 2
     % this causes the collision system to regard any two notes that are 2 semitones apart as colliding
@@ -1150,23 +1139,8 @@ stopAcciaccaturaMusic = {
 
     \override Stem.before-line-breaking = #(stem-before-line-breaking)
 
-    #(if unify-dots?
-      #{
-        \override Dots.transparent = #dots-shift-to-stem-tip
-      #}
-      #{ #}
-      )
-    
+    $(if unify-dots? #{ \override Dots.transparent = #dots-shift-to-stem-tip #})
 
-    
-    
-    #(if (= thick-staffline 1)
-      #{
-        \override StaffSymbol.thickness = #1.8
-      #}
-      #{ #}
-      )
-    
     % setting the ledge line thickness to be identical to the staff line thickness
     % default value was #'(1.0 0.1)
     \override StaffSymbol.ledger-line-thickness = #'(1.0 . 0.0)
@@ -1188,6 +1162,13 @@ stopAcciaccaturaMusic = {
     \remove "Accidental_engraver"
     \remove "Key_engraver"
     \numericTimeSignature
+  }
+
+  \context {
+    \Voice
+    % rests require to be moved to the proper position based on the new staff line positions
+    \override Rest.Y-offset = #(rest-y-offset 3)
+    \override MultiMeasureRest.Y-offset = #(rest-y-offset 2)
   }
 
   \context {

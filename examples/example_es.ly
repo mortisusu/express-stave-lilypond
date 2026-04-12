@@ -124,7 +124,7 @@ msg =
 
   \grace {cis''8.} e''4 _\markup\italic"graces"
   \slashedGrace {c''8} e''4
-  \appoggiatura {ais'8.} e''4
+  \appoggiatura {ais'8. g'} e''4
   \acciaccatura  {f''8} e''4 |
   c8 _\markup\italic"flags" s16 c16 s16 c32 s16 c64 s16
   b8 s16 b16 s16 b32 s16 b64
