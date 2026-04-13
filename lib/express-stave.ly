@@ -38,7 +38,7 @@
 %   https://gitlab.com/paulmorris/lilypond-clairnote
 
 \version "2.24.0"
-#(define ES_VERSION "1.26.04.12")
+#(define ES_VERSION "1.26.04.13")
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1105,13 +1105,13 @@ stopAcciaccaturaMusic = {
       \override Flag.stencil = % making flags slightly shorter
           #(grob-transformer 'stencil 
             (lambda (grob original)
-              (ly:stencil-scale original 1.0 0.8)))
+              (ly:stencil-scale original 1.0 0.9)))
 
     }
  
   \context {
     \Staff
-    \override Stem.length-fraction = #(/ 0.9 express-staff-space)  % the relative stem leangth (default is 1)
+    \override Stem.length-fraction = #(/ 1 express-staff-space)  % the relative stem leangth (default is 1)
     % \override Stem.length = #(/ 8.0 express-staff-space)
     % \override Stem.details.beamed-lengths = #(map (lambda (x) (* x 1.2)) '(3.26 3.5 3.6))
     \override Stem.thickness = #0.87  % Default is 1.3; lower is thinner
