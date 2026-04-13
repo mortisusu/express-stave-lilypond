@@ -1072,12 +1072,15 @@ stopAcciaccaturaMusic = {
 %%%%%%%%%%%%%%%%%%%%%%%
 
 \paper {
+  system-system-spacing.padding = #-2 % minimizing unwanted page breaks. default is 1
+
   % #(layout-set-staff-size 16) % general staff size
   #(if (= express-showpianoroll 1)
         ; removing indents so the pianoroll appears next to the staff
        (begin
          (set! indent (* 0 mm))
          (set! short-indent (* 0 mm))))
+
 }
 
 \header {
@@ -1096,11 +1099,14 @@ stopAcciaccaturaMusic = {
       #(if (= express-showpianoroll 1)
        #{
         % moving the bar numbers so they won't collide with the pianoroll stencil
-        \override BarNumber.extra-offset = #'(2 . 0)
+        \override BarNumber.extra-offset = #'(1.5 . -0.5)
+      #}
+      #{
+        \override BarNumber.extra-offset = #'(0 . -1)
       #})
 
       \override BarNumber.Y-offset = #(* 6 express-staff-space) % compensating for thicker staff lines (which causes the position to be wrong)
-      \override StaffGrouper.staff-staff-spacing.padding = 0.5
+      \override StaffGrouper.staff-staff-spacing.padding = #0.5 % minimizing unwanted page breaks. default is 1
       \override Hairpin.height = #(/ 0.6 express-staff-space) % crescendo, decrescendo height. default is 0.6666
       \override Flag.stencil = % making flags slightly shorter
           #(grob-transformer 'stencil 
