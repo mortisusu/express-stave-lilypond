@@ -17,7 +17,6 @@
   title = "Suite Bergamasque – Clair de Lune"
   composer = "Claude Debussy"
   footer = "Mutopia-2010/12/21-1778"
-  tagline = "Notation: Express Stave"
 }
 
 % \pointAndClickOff

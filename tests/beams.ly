@@ -10,7 +10,7 @@ express-multi-stems=2
 \include "../lib/express-stave.ly" % comment-out to show classical notation
 
 \header {
-	title = "Dots"
+	title = "Beams"
 	style =	"Music Style"
   footer = "Express Stave"
  }
@@ -54,70 +54,24 @@ msg =
 
 notes = {
    
-  ais'1|
-  r1|
-  d1.*2/3| f,1.*2/3|
+    \repeat tremolo 4 { f'32 _"tremolos" g' } 
+    \override Beam.gap = #0.9
+    % \once \override Beam.gap-count = #3 % A higher number covers more bars
+    \repeat tremolo 12 { f'32 g' } |
+    s1 |  s1|
+    \repeat tremolo 4 { f32 g } 
+    \override Beam.gap = #0.9
+    % \once \override Beam.gap-count = #20 % A higher number covers more bars
+    \repeat tremolo 12 { f32 g } |
 
-  <b' c''>8.. s32 <a' e''>2. |
-  s1 |
-  s2*2|s2*2|
+    \repeat tremolo 6 { f'32 g' } 
+    \override Beam.gap = #0.9
+    \once \override Beam.gap-count = #3 % A higher number covers more bars
+    \repeat tremolo 8 { f'32 g' } r8 | 
+    s1 | s1 |
+    \repeat tremolo 16 { f32 g } 
+    |
 
-  <b' c'' e''>8.. s32 <a' e''>2. ( |
-  s1 |
-  c4. \stemDown c4. s4 \stemNeutral |s1 |
-
-  \stemDown
-  <b' e''>2.) <b'' e'''>8.. s32 
-  \stemNeutral |
-  s1 |
-  s1 |c1 |
-
-  b'8. c'8 
-  s8 f'8. s8 
-  b'32. c'16 s32 s64
-  s128 \stemUp g'''32.. b''32 \stemNeutral
-  |
-  s1 |
-  s1 | 
-  b8. c8 
-  s8 fis8. s8 
-  g32. a,16 s32 s64
-  s128 fis32.. g32  
-   |
-
-  \stemDown
-  b'8. c'8 
-  s8 b'8. s8
-  b'16. c'16
-  s64 b'32. c'32 
-  \stemNeutral |
-  s1 |
-  r2. r4 | d1|
-
-
-  s1 | s1 |
-  \stemUp a,8 [ \change Staff="1" \stemDown f''8. ] s8 s16 \change Staff="2" 
-  \stemUp a,8. [ \change Staff="1" \stemDown f''8 ] s8 s16 \change Staff="2" 
-  |
-  s1 |
-
-
-  b''32. c'32 
-  s64 b'8. b'8 
-  s8 b'16. b'16
-  s8 b'8. 
-  |
-  s1 |
-  s1 | 
-
-  b32. c32 
-  s64 b8. b8 
-  s8 b16. b16
-  s8 b8. 
-  |
-  
-
-  \break
 }
 
 

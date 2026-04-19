@@ -38,7 +38,7 @@
 %   https://gitlab.com/paulmorris/lilypond-clairnote
 
 \version "2.24.0"
-#(define ES_VERSION "1.26.04.13")
+#(define ES_VERSION "1.26.04.19")
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -910,83 +910,138 @@ ottava =
      final-edge))
 
 
-#(define (cn-multi-stem grob duration-log)
-   (let*
-    ((stem-stil (ly:stem::print grob))
-     (dir (ly:grob-property grob 'direction))
-     (up-stem (= 1 dir))
-     (stem-thickness (ly:grob-property grob 'thickness))
-
-     ;; --- X / width / spacing ---
-
-     (stem-x-extent (ly:grob-property grob 'X-extent))
-     (stem-width (abs (- (car stem-x-extent) (cdr stem-x-extent))))
-
-     (spacing-scale (ly:grob-property grob 'cn-double-stem-spacing 2.2))
-     (spacing-shift (* dir spacing-scale stem-width))
-     (stem-y-extent (ly:grob-property grob 'Y-extent))
-
-     (note-heads (cn-note-heads-from-grob grob '()))
-     (heads-edge (cn-grobs-edge note-heads up-stem))
-     (stem-tip (if up-stem (cdr stem-y-extent) (car stem-y-extent)))
-     
-     (stem2-y-extent (if up-stem
-                         (cons heads-edge stem-tip)
-                         (cons stem-tip heads-edge)))
-
-     (stem-height (abs (- (car stem-y-extent) (cdr stem-y-extent))))
-     (stem2-height (abs (- (car stem2-y-extent) (cdr stem2-y-extent))))
-
-     (height-ratio (* (/ stem2-height stem-height) 0.9))
-     (stem-y-translate (if up-stem 
-        (- (max (car stem-y-extent) (cdr stem-y-extent)))
-        (- (min (car stem-y-extent) (cdr stem-y-extent)))
-     ))
-  
-     (stem-single 
-        (ly:stencil-translate-axis
-            (ly:stencil-scale 
-                (ly:stencil-translate-axis stem-stil
-                  stem-y-translate Y)
-              1 height-ratio)
-          (- stem-y-translate) Y)
-     )
-     (shift-count 1)
-     (total-shifts (- 2 duration-log))
-    )
-
-    (while (<= duration-log 1)
-      (let* (
-          (shift (* shift-count spacing-shift))
-          (stem2-stil (ly:stencil-translate-axis stem-single shift X))
-        )
-        (set! duration-log (+ duration-log 1))
-        (set! shift-count (+ shift-count 1))
-        (set! stem-stil (ly:stencil-add stem-stil stem2-stil))
+#(define (stem-stencil-callback grob default)
+  (if (and 
+          default
+          (> express-multi-stems 0)
+          (not (null? (ly:grob-object grob 'note-heads)))
+          (>= 1 (ly:grob-property grob 'duration-log))
       )
+          
+    (let*
+      (
+        (note-heads (cn-note-heads-from-grob grob '()))
+        (duration-log (ly:grob-property (car note-heads) 'duration-log))
+
+        (stem-stil default)
+        (dir (ly:grob-property grob 'direction))
+        (up-stem (= 1 dir))
+        (stem-thickness (ly:grob-property grob 'thickness))
+
+        ;; --- X / width / spacing ---
+
+        (stem-x-extent (ly:stencil-extent default X))
+        (stem-width (abs (- (car stem-x-extent) (cdr stem-x-extent))))
+
+        (spacing-scale (ly:grob-property grob 'cn-double-stem-spacing 2.2))
+        (spacing-shift (* dir spacing-scale stem-width))
+        (stem-y-extent  (ly:stencil-extent default Y))
+
+        (heads-edge (cn-grobs-edge note-heads up-stem))
+        (stem-tip (if up-stem (cdr stem-y-extent) (car stem-y-extent)))
+        
+        (stem2-y-extent (if up-stem
+                            (cons heads-edge stem-tip)
+                            (cons stem-tip heads-edge)))
+
+        (stem-height (abs (- (car stem-y-extent) (cdr stem-y-extent))))
+        (stem2-height (abs (- (car stem2-y-extent) (cdr stem2-y-extent))))
+
+        (height-ratio (* (/ stem2-height stem-height) 0.9))
+        (stem-y-translate (if up-stem 
+            (- (max (car stem-y-extent) (cdr stem-y-extent)))
+            (- (min (car stem-y-extent) (cdr stem-y-extent)))
+        ))
+      
+        (stem-single 
+            (ly:stencil-translate-axis
+                (ly:stencil-scale 
+                    (ly:stencil-translate-axis stem-stil
+                      stem-y-translate Y)
+                  1 height-ratio)
+              (- stem-y-translate) Y)
+        )
+        (shift-count 1)
+        (total-shifts (- 2 duration-log))
+      )
+
+      (while (<= duration-log 1)
+        (let* (
+            (shift (* shift-count spacing-shift))
+            (stem2-stil (ly:stencil-translate-axis stem-single shift X))
+          )
+          (set! duration-log (+ duration-log 1))
+          (set! shift-count (+ shift-count 1))
+          (set! stem-stil (ly:stencil-add stem-stil stem2-stil))
+        )
+      )
+      stem-stil
     )
 
-    (let (
-        (x-extent (ly:stencil-extent (ly:grob-property grob 'stencil) X))
+    default
+  )
+)
+
+#(define (stem-stencil-x-extent-callback grob default)
+
+  (if (and 
+          default
+          (> express-multi-stems 0)
+          (not (null? (ly:grob-object grob 'note-heads)))
+          (>= 1 (ly:grob-property grob 'duration-log))
+      )
+          
+    (let*
+      (
+        (note-heads (cn-note-heads-from-grob grob '()))
+        (duration-log (ly:grob-property (car note-heads) 'duration-log))
+        (dir (ly:grob-property grob 'direction))
+        (up-stem (= 1 dir))
+        (stem-width (abs (- (car default) (cdr default))))
+
+        (spacing-scale (ly:grob-property grob 'cn-double-stem-spacing 2.2))
+        (spacing-shift (* dir spacing-scale stem-width))
+
+        (total-shifts (- 2 duration-log))
         (x-margin (/ (* spacing-shift total-shifts) express-staff-space))
       )
 
-      (ly:grob-set-property! grob 'stencil stem-stil)
-      ;; X-extent needs to be set here because its usual callback
-      ;; ly:stem::width doesn't take the actual stencil width into account
+      (cons 
+          (+ (car default)(if up-stem 0 x-margin))
+          (+ (cdr default) (if up-stem x-margin 0))
+      )
+    )
 
-      (ly:grob-set-property! grob 'X-extent
-                            (cons 
-                                (+ (car x-extent)(if up-stem 0 x-margin))
-                                (+ (cdr x-extent) (if up-stem x-margin 0) )))
+    default
+  )
+)
 
-    )))
+% for 1/2 notes and longer, set the beam gap to a high number. Otherwise, there is no gap between the
+% beam and the stems, which is incorrect in ES, since noteheads are identical in all cases.
+#(define (beam-gap-count-callback grob default)
+  (let* 
+    (
+      (stems (ly:grob-object grob 'stems))
+    )
+
+    (if (and
+          (> express-multi-stems 0)
+          stems
+          (not (null? (ly:grob-object (ly:grob-array-ref stems 0) 'note-heads)))
+          (>= 1 (ly:grob-property (car (cn-note-heads-from-grob (ly:grob-array-ref stems 0) '())) 'duration-log))
+        )
+      20
+      default
+    )
+  )
+
+)
+
 
 #(define (stem-before-line-breaking)
    ;; Lengthen all stems to undo staff compression side effects,
    ;; and give half notes double stems.
    (lambda (grob)
-
       ;; Make sure omit is not in effect (i.e. stencil is not #f)
       ;; and the stem has a notehead (i.e. is not for a rest,
       ;; rest grobs have stem grobs that have no stencil)
@@ -1000,10 +1055,6 @@ ottava =
         ;; double stems for half notes: tricking the system by specifying duration-log = 1 (half note)
         (when (and (number? duration-log) (< duration-log 1))
           (ly:grob-set-property! grob 'duration-log 1))
-
-        (when (>= 1 duration-log) 
-          (ly:grob-set-property! grob 'thickness (get-detail grob 'es-multi-thickness))
-          (cn-multi-stem grob duration-log))
      ))
 ))
 
@@ -1113,6 +1164,8 @@ stopAcciaccaturaMusic = {
             (lambda (grob original)
               (ly:stencil-scale original 1.0 0.9)))
 
+      \override Beam.gap-count = #(grob-transformer 'gap-count beam-gap-count-callback)
+
     }
  
   \context {
@@ -1175,6 +1228,9 @@ stopAcciaccaturaMusic = {
     % rests require to be moved to the proper position based on the new staff line positions
     \override Rest.Y-offset = #(rest-y-offset 3)
     \override MultiMeasureRest.Y-offset = #(rest-y-offset 2)
+    \override Stem.stencil = #(grob-transformer 'stencil stem-stencil-callback)
+    \override Stem.X-extent = #(grob-transformer 'X-extent stem-stencil-x-extent-callback)
+    
   }
 
   \context {
