@@ -3,10 +3,7 @@
 % dummy definitions in case we want to comment-out express-stave
 snhs = #(define-music-function (offsets) (list?))
 
-% #(define express-staff-space 1.3333) % uncomment to modify the notation space
-% #(define express-showpianoroll 1) % uncomment to show a small pianoroll to the left of the staff lines
-% 1 % uncomment for express stave original notation (white piano keys = white notes)
-express-multi-stems=2
+% express-staff-space  = #1.66666666 % uncomment to modify the notation space
 \include "../lib/express-stave.ly" % comment-out to show classical notation
 
 \header {
@@ -26,6 +23,7 @@ express-multi-stems=2
   \context {
     \PianoStaff 
     instrumentName = ##f
+    % \override StaffSymbol.stencil = ##f
   }
 }
 
@@ -41,7 +39,10 @@ express-multi-stems=2
 
    \context {
     \Staff
-    % \override StaffSymbol.thickness = #4
+    % \override Stem.thickness = #0
+    \override Dots.color = #red
+    % \override Beam.beam-thickness = #1
+    % \override Beam.length-fraction = #2
     % \override Dots.transparent = #dots-shift-to-stem-tip
   }
 }
@@ -50,35 +51,61 @@ msg =
 #(define-scheme-function (text) (markup?)
    #{ \markup \fontsize #-3 #text #})
 
+notes-test = {
 
+  [g'32. g'] s16
+  \repeat tremolo 6 { g'32 g' } 
+  |
+  s1 | s1 | s1 |
+}
 
 notes = {
+
+    % f'16. f' s16*7 [f'16. f']| s1 |s1 |s1|
+
+    % g''8. g'' s8*5 | s1 | s1 |s1 | % a single beam
+    
+    g'8. g' s16     g'16. g' s16    [g'32. g'] s16    [g'64. g'] s16    [g'64. g']
+    
+    | 
+    s1 | s1 | 
+    b8. b s16 b16. b s16  [b32. b] s16 [b64. b] s64*7|
+
+    f'8. _"slope" g' s16 f'16. g' s16  [f'32. g'] s32*7 | 
+    s1 | s1 | 
+    f8. g s16 f16. g s16  [f32. g] s32*7 |
    
     \repeat tremolo 4 { f'32 _"tremolos" g' } 
-    \override Beam.gap = #0.9
     % \once \override Beam.gap-count = #3 % A higher number covers more bars
-    \repeat tremolo 12 { f'32 g' } |
+    \repeat tremolo 12 { f'32 f' } |
     s1 |  s1|
     \repeat tremolo 4 { f32 g } 
-    \override Beam.gap = #0.9
     % \once \override Beam.gap-count = #20 % A higher number covers more bars
+    % \override Beam.gap = #0.9
+    % \override Beam.normalized-endpoints = #(cons 0.4 1)
     \repeat tremolo 12 { f32 g } |
 
+
+
     \repeat tremolo 6 { f'32 g' } 
-    \override Beam.gap = #0.9
-    \once \override Beam.gap-count = #3 % A higher number covers more bars
     \repeat tremolo 8 { f'32 g' } r8 | 
     s1 | s1 |
+    % \override Beam.gap = #0.9
+    
     \repeat tremolo 16 { f32 g } 
     |
 
+
+
+    % s1 | s1 | s1 | 
+    % \repeat tremolo 24 { f32 g } |
+    % s1 | s1 | s1 | s2 |
 }
 
 
 
 \parallelMusic #'(voiceA voiceB voiceC voiceD) {
   \time 4/4
-
   \notes
   
 }

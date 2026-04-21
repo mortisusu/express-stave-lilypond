@@ -3,10 +3,7 @@
 % dummy definitions in case we want to comment-out express-stave
 snhs = #(define-music-function (offsets) (list?))
 
-% #(define express-staff-space 1.3333) % uncomment to modify the notation space
-% #(define express-showpianoroll 1) % uncomment to show a small pianoroll to the left of the staff lines
-% 1 % uncomment for express stave original notation (white piano keys = white notes)
-express-multi-stems=2
+express-staff-space = #1.6666 % uncomment to modify the notation space
 \include "../lib/express-stave.ly" % comment-out to show classical notation
 
 \header {
@@ -41,6 +38,7 @@ express-multi-stems=2
 
    \context {
     \Staff
+    \override Dots.color = #red
     % \override StaffSymbol.thickness = #4
     % \override Dots.transparent = #dots-shift-to-stem-tip
   }
@@ -82,7 +80,7 @@ notes = {
   b8. c8 
   s8 fis8. s8 
   g32. a,16 s32 s64
-  s128 fis32.. g32  
+  s128 fis32.. c 32  
    |
 
   \stemDown

@@ -1,24 +1,12 @@
 \version "2.24.0"
 
 % #(define express-staff-space 0.7)
-#(define express-pianoforte 0)
+% #(define express-pianoforte 0)
 % #(define express-showpianoroll 1)
 \include "../lib/express-stave.ly"
 
 \header {
-  mutopiatitle = "Suite Bergamasque: Clair de Lune"
-  mutopiacomposer = "DebussyC"
-  mutopiaopus = "L75"
-  mutopiainstrument = "Piano"
-  source = "E. Fromont (1905)"
-  % Plate E. 1404 F.  IMSLP #02907
-  style = "Modern"
-  % copyright = "Public Domain"
-  maintainer = "Keith OHara"
-  title = "Suite Bergamasque – Clair de Lune"
-  composer = "Claude Debussy"
-  footer = "Mutopia-2010/12/21-1778"
-  tagline = "Notation: Express Stave"
+  title = "Note Shifts"
 }
 
 % \pointAndClickOff
@@ -69,8 +57,6 @@ sv =  s8\sustainOff\sustainOn
 
 \parallelMusic #'(rhUpRed rhDownGreen lhUpBlue lhDownGrey)
 {
-  \override Score.MetronomeMark.padding = #4
-  \tempo"Andante très expressif"
   \slurUp \phrasingSlurUp 
   \clef treble
   s8\pp \cl<f a> \cu <f' a>  s4. s4. |

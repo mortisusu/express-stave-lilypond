@@ -38,7 +38,7 @@
 %   https://gitlab.com/paulmorris/lilypond-clairnote
 
 \version "2.24.0"
-#(define ES_VERSION "1.26.04.19")
+#(define ES_VERSION "1.26.04.21")
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -128,6 +128,8 @@ snhs =
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%% INTERNAL CODE STARTS HERE
+
+#(define express-staff-space-inv (/ 1 express-staff-space))
 
 #(define D-NOTES 0)  
 #(define D-ALL 2)
@@ -544,7 +546,7 @@ ottava =
             0.02)) ; a slight nudge towards the staff line since there's sometimes a very small gap
 
           ; translate-up-ext places the notehead slightly above the staff line above
-          (translate-up-ext (+ (* 1 0.5  express-staff-space) ; the base poisition is 1 semitones up
+          (translate-up-ext (+ (* 1 0.5 express-staff-space) ; the base poisition is 1 semitones up
             (* -0.37 note-height) ; reducing less than half the notehead height so there will be a slight protrusion
             (* 0.5 staff-thickness) ; adding half the notehead thickness (so the base alignment is to the stall line's top)
             0)) ; a slight nudge towards the staff line since there's sometimes a very small gap
@@ -724,43 +726,65 @@ ottava =
           (memq 'flag-interface (ly:grob-interfaces flag)))))
 
 % calculates the y-offset of dots for beamed stems, so they will not overlap the beam
-#(define (beam-y-offset stem-grob beam-grob stem-dir x-offset)
+#(define (beam-y-offset stem-grob beam-grob stem-dir margin x-offset)
   (let* (
-        ; calculate the beam's slope:
-        (y-pos (ly:grob-property beam-grob 'positions))
-        (y-left (car y-pos))
-        (y-right (cdr y-pos))
 
-        (x-pos (ly:grob-property beam-grob 'X-positions))
-        (x-left (car x-pos))
-        (x-right (cdr x-pos))
-
-        (slope (if (= x-right x-left 0) 
-          0
-          (/ (- y-right y-left) (- x-right x-left))
-        ))
-
-        (y-offset-base (* slope x-offset)) ; the base offset, based on the beam's slope and the x-offset from the stem
-
-        ; additional offset due to the beams' count and thickness
-        (thickness (ly:grob-property beam-grob 'beam-thickness))
-        (gap (ly:grob-property beam-grob 'gap))
         (beaming (ly:grob-property stem-grob 'beaming))
         (num-beams (if (list? beaming)
             (length (filter number? beaming))
             0
         ))
 
-        (extra-gap (* 3 (- gap thickness)))
+        (y-offset (if (> num-beams 0) 
+          (let* (
+                ; calculate the beam's slope:
+                  (y-pos (ly:grob-property beam-grob 'positions))
+                  (y-left (car y-pos))
+                  (y-right (cdr y-pos))
 
-        (thickness-offset (+ thickness extra-gap (* (- num-beams 1) 1.13 gap)))
-        
-        (y-offset (+ y-offset-base (* -1 stem-dir thickness-offset)))
+                  (x-pos (ly:grob-property beam-grob 'X-positions))
+                  (x-left (car x-pos))
+                  (x-right (cdr x-pos))
+
+                  (slope (if (= x-right x-left 0) 
+                    0
+                    (/ (- y-right y-left) (- x-right x-left))
+                  ))
+
+                  (y-offset-base (* slope x-offset)) ; the base offset, based on the beam's slope and the x-offset from the stem
+
+                  ; additional offset due to the beams' count and thickness
+                  (beam-thickness (ly:grob-property beam-grob 'beam-thickness))
+                  (gap (ly:grob-property beam-grob 'length-fraction)) ; that's the distance between beams
+                  
+                  (line-thick (ly:staff-symbol-line-thickness beam-grob))
+                  (len-frac (ly:grob-property beam-grob 'length-fraction)) ; that's the distance between beams
+                  (beams-from-first (max (- num-beams 1) 0))
+
+                  (beam-dist (if (< num-beams 4)
+                      (/ (- (+ (* 2 len-frac) 
+                              (* line-thick len-frac)) 
+                            beam-thickness) 
+                        2.0)
+                      (/ (- (+ (* 3 len-frac) 
+                              (* line-thick len-frac)) 
+                            beam-thickness) 
+                        3.0)))
+
+                  (extra-gap (* beam-dist beams-from-first) )
+
+                  ; add a small margin so the dot is not touching the beam
+                  (extra-gap (+ extra-gap beam-thickness margin))
+
+              )
+            (+ y-offset-base (* -1 stem-dir extra-gap))
+          )
+        0
+        ))
   )
 
-  ;(debug D-ALL "beam-y-offset. slope: ~a, y-offset-base: ~a, thickness: ~a, gap: ~a, num-beams: ~a" slope y-offset-base thickness gap num-beams)
+  ;(debug D-ALL "beam-y-offset. line-thick: ~a" line-thick)
   y-offset
-  
 ))
 
 
@@ -804,7 +828,7 @@ ottava =
                         ;; If stem is DOWN (-1), tip is the min extent (car)                        
                         (tip-y (if up-stem? (cdr stem-y-ext) (car stem-y-ext)))
                                               
-                        (dots-half-height (* (extent-size (ly:grob-extent dots-grob dots-grob Y)) 0.8))
+                        (dots-half-height (* (extent-size (ly:grob-extent dots-grob dots-grob Y)) 0.5 express-staff-space-inv))
                         (dot-height-shift (* -1 stem-dir dots-half-height))
 
                         ; the amount we need to shift the dots to the stem tip
@@ -818,18 +842,38 @@ ottava =
                         (flag-offset (if (has-flag? stem) 0.7 0)) ; stems with flags 𝅘𝅥𝅯 get an extra offset
                         (offset-x (+ grob-pad flag-offset))
                         
+                        (duration-log (ly:grob-property first-notehead 'duration-log))
 
                         (beam-grob (ly:grob-object stem 'beam))
-                        (has-beam (if (ly:grob? beam-grob) #t #f))
-                        (dots-extent-right (cdr (ly:grob-extent dots-grob dots-grob X)))
+                        (has-beam (ly:grob? beam-grob)) 
+                        
+                        ; if there are beams, shift the dots after the beams
                         (beam-offset (if has-beam
-                            (beam-y-offset stem beam-grob stem-dir (+ offset-x dots-extent-right)) 
+                            (let* (
+                                    ; evaluate for both left and right sides of the dots (there might be multiple dots)
+                                    (dots-extent-left (car (ly:grob-extent dots-grob dots-grob X)))
+                                    (dots-extent-right (cdr (ly:grob-extent dots-grob dots-grob X)))
+                                    (offset-left (beam-y-offset stem beam-grob stem-dir dots-half-height (+ offset-x dots-extent-left)))
+                                    (offset-right (beam-y-offset stem beam-grob stem-dir dots-half-height (+ offset-x dots-extent-right)))
+                                )
+
+                                (if (> (abs offset-right) (abs offset-left))
+                                    offset-right
+                                    offset-left
+                                )
+                                
+                            )
+                            
                             0))
 
-                        (offset-y beam-offset)
+                        ;(x (debug D-ALL "gap-count: ~a" (ly:grob-property beam-grob 'gap-count)))
+                        (tremolo-offset (if (and has-beam (number? (ly:grob-property beam-grob 'gap-count))) ; TODO GIL: detect tremolo
+                            (* (ly:grob-property beam-grob 'beam-thickness) -0.5 stem-dir express-staff-space)
+                            0
+                          ))
                         
                         (shift-x (+ shift-tip-x offset-x))
-                        (shift-y (+ shift-tip-y offset-y))
+                        (shift-y (+ shift-tip-y beam-offset tremolo-offset))
 
                         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
                         ; if the dots are position over a staff line, we need to shift them so they will not be hidden
@@ -933,7 +977,7 @@ ottava =
         (stem-x-extent (ly:stencil-extent default X))
         (stem-width (abs (- (car stem-x-extent) (cdr stem-x-extent))))
 
-        (spacing-scale (ly:grob-property grob 'cn-double-stem-spacing 2.2))
+        (spacing-scale (ly:grob-property grob 'cn-double-stem-spacing 2.5))
         (spacing-shift (* dir spacing-scale stem-width))
         (stem-y-extent  (ly:stencil-extent default Y))
 
@@ -999,7 +1043,7 @@ ottava =
         (up-stem (= 1 dir))
         (stem-width (abs (- (car default) (cdr default))))
 
-        (spacing-scale (ly:grob-property grob 'cn-double-stem-spacing 2.2))
+        (spacing-scale (ly:grob-property grob 'cn-double-stem-spacing 2.5))
         (spacing-shift (* dir spacing-scale stem-width))
 
         (total-shifts (- 2 duration-log))
@@ -1007,7 +1051,7 @@ ottava =
       )
 
       (cons 
-          (+ (car default)(if up-stem 0 x-margin))
+          (+ (car default) (if up-stem 0 x-margin))
           (+ (cdr default) (if up-stem x-margin 0))
       )
     )
@@ -1023,7 +1067,6 @@ ottava =
     (
       (stems (ly:grob-object grob 'stems))
     )
-
     (if (and
           (> express-multi-stems 0)
           stems
@@ -1035,6 +1078,33 @@ ottava =
     )
   )
 
+)
+
+#(define (beam-gap-callback grob default)
+  (let* 
+    (
+      (stems (ly:grob-object grob 'stems))
+    )
+    (if (and
+          (> express-multi-stems 0)
+          stems
+          (not (null? (ly:grob-object (ly:grob-array-ref stems 0) 'note-heads)))
+          (>= 1 (ly:grob-property (car (cn-note-heads-from-grob (ly:grob-array-ref stems 0) '())) 'duration-log))
+        )
+      (let* (
+              (stem-first (ly:grob-array-ref stems 0))
+              (note-heads (cn-note-heads-from-grob stem-first '()))
+              (duration-log (ly:grob-property (car note-heads) 'duration-log))
+            )
+        (cond 
+          ((< duration-log 1) 1.5)
+          ((= duration-log 1) 0.9)
+          (else default)
+        )
+      )
+      default
+    )
+  )
 )
 
 
@@ -1165,6 +1235,7 @@ stopAcciaccaturaMusic = {
               (ly:stencil-scale original 1.0 0.9)))
 
       \override Beam.gap-count = #(grob-transformer 'gap-count beam-gap-count-callback)
+      \override Beam.gap = #(grob-transformer 'gap beam-gap-callback)
 
     }
  
