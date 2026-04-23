@@ -4,10 +4,12 @@
 snhs = #(define-music-function (offsets) (list?))
 
 % express-staff-space  = #1.66666666 % uncomment to modify the notation space
+express-pianoforte = 1
 \include "../lib/express-stave.ly" % comment-out to show classical notation
 
 \header {
 	title = "Beams"
+  subtitle =" "
 	style =	"Music Style"
   footer = "Express Stave"
  }
@@ -51,13 +53,9 @@ msg =
 #(define-scheme-function (text) (markup?)
    #{ \markup \fontsize #-3 #text #})
 
-notes-test = {
-
-  [g'32. g'] s16
-  \repeat tremolo 6 { g'32 g' } 
-  |
-  s1 | s1 | s1 |
-}
+mono =
+#(define-scheme-function (text) (markup?)
+   #{ \markup \typewriter \fontsize #-2 #text #})
 
 notes = {
 
@@ -86,17 +84,49 @@ notes = {
     \repeat tremolo 12 { f32 g } |
 
 
+    \break
+    \staff-dist 12
 
     \repeat tremolo 6 { f'32 g' } 
-    \repeat tremolo 8 { f'32 g' } r8 | 
-    s1 | s1 |
+    \repeat tremolo 8 { f'32 g' } s8 | 
+    s1 _\mono "\staff-dist 12"| s1 |
     % \override Beam.gap = #0.9
     
     \repeat tremolo 16 { f32 g } 
-    |
+    | 
 
 
+    \beamauto 0 0
+    \change Staff="2"
+    \stemUp c'32  _\mono "\beamauto 0 0" [ \change Staff="1" \stemDown f' \change Staff="2"
+    \stemUp c' \change Staff="1" \stemDown f' \change Staff="2"
+    \stemUp c' \change Staff="1" \stemDown f' ]
 
+    \beamauto 0 0
+    \change Staff="2"
+    \stemUp c'8 [ \change Staff="1" \stemDown f' \change Staff="2"
+    \stemUp c' \change Staff="1" \stemDown f' \change Staff="2"
+    \stemUp c' \change Staff="1" \stemDown f' ]
+    s16|
+    s1 |s1 |s1 | \noBreak
+
+
+    \beamauto -1 1
+    \change Staff="2" \stemUp d'32 _\mono "\beamauto -1 1" [ \change Staff="1" \stemDown e'
+    \change Staff="2" \stemUp d' \change Staff="1" \stemDown e'
+    \change Staff="2" \stemUp eis' \change Staff="1" \stemDown f'
+     ]
+    % r32*6
+
+    \beamauto -1 1
+    \change Staff="2" \stemUp d'8 [ \change Staff="1" \stemDown e'
+    \change Staff="2" \stemUp d' \change Staff="1" \stemDown e'
+    \change Staff="2" \stemUp eis' \change Staff="1" \stemDown f'
+     ]
+     s16|
+    s1 |s1 |s1 |
+
+    % \break
     % s1 | s1 | s1 | 
     % \repeat tremolo 24 { f32 g } |
     % s1 | s1 | s1 | s2 |

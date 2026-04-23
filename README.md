@@ -202,11 +202,12 @@ To control the vertical staff spacing (that's the space between the three staff 
 </div>
 
 
-To control the space between the right-hand and left-hand staff lines, add the following to the ``\layout`` ``\context score`` section:
+To set the space between the right-hand and left-hand staff lines, use `StaffGrouper.staff-staff-spacing` or the `\staff-dist` helper function:
 
 <div style="display: flex; align-items: center;">
   <div style="width:100%">
-    <pre><code>\layout {
+    <pre><code>% the following sets the space for the entire piece:
+\layout {
   \context {
     \Score
     \override StaffGrouper.staff-staff-spacing = 
@@ -215,7 +216,9 @@ To control the space between the right-hand and left-hand staff lines, add the f
     (padding . 1)
     (stretchability . 0))
   }
-}
+}<br>
+% to set the distance for a single system, use this at the BEGINNING of a system:
+\staff-dist #15
 </code></pre>
   </div>
   <img alt="" src="./assets/docs/staff-staff-space.png" style="margin-left: 20px;" height="140">
@@ -267,8 +270,10 @@ e f>
 
 Add ``\break`` commands between bars to force line breaks. Add ``\pageBreak`` to force page breaks.
 
+Use ``\noBreak`` and ``\noPageBreak`` to prevent breaks.
+
 ```
- c b e g |
+ c b e g | \noBreak % prevents a line break here
  c b e g | \break % forces a line break here
  c b e g |
  c b e g | \pageBreak % forces a page break here
@@ -278,11 +283,25 @@ Add ``\break`` commands between bars to force line breaks. Add ``\pageBreak`` to
 
 #### Fixing `no viable initial configuration found: may not find good beam slope` warnings:
 
-These warnings happen when the system has problems rendering a connector beams. You may notice strange beam angles in the affected area. You may safely ignore these if the display is correct. To fix, add the following **right before** the problematic section:
+These warnings happen when the system has problems rendering a  beams. You may notice strange beam angles in the affected area. You may safely ignore these if the display is correct. To fix, add the following **right before** the problematic section:
 
 ```
 \beampos -12.5 -10 % change these values until you are pleased with the result
 ```
+
+For incorrect beams that connect stems to go both up and down, the `\beamauto` command creates a horizontal beam. For example:
+
+<div style="display: flex; align-items: center;">
+  <div style="width:100%">
+    <pre><code>\beamauto 0 0 % modify 0 0 to adjust the edge heights
+\change Staff="2" \stemUp d'32 [ \change Staff="1" \stemDown e'
+\change Staff="2" \stemUp d' \change Staff="1" \stemDown e'
+\change Staff="2" \stemUp eis' \change Staff="1" \stemDown f' ]
+</code></pre>
+  </div>
+  <img alt="" src="./assets/docs/beamauto.png" style="margin-left: 20px;" height="110">
+</div>
+
 
 
 #### Fixing `this Voice needs a \voiceXx or \shiftXx setting` warnings:

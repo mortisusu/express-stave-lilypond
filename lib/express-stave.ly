@@ -38,13 +38,50 @@
 %   https://gitlab.com/paulmorris/lilypond-clairnote
 
 \version "2.24.0"
-#(define ES_VERSION "1.26.04.21")
+#(define ES_VERSION "1.26.04.23")
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%% Express Stave default variables
 %%%% In order to override, set express-* BEFORE including this script
+%
+% express-staff-space: controls the spacing between staff lines. Default is 1
+%
+% express-pianoforte: if 1, white piano keys are denoted by black noteheads. Default is 1
+%
+% express-showpianoroll: if 1, pianoroll markings are displayed to the left of the staff lines, 
+%                        making it easier to identify the notes. Default is 0
+%
+% express-multi-stems: if 0, stems are similar to classic notation, but minims (half notes) and 
+%                      semibreves (whole notes) have a different notehead.
+%                      if > 0, two stems are drawn for minims , and three for semibreves
+%                      if > 1, dots are unified
+%                      Default is 2
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%% Helper functions:
+%
+% beampos left right: Manual override of the beam positions. Useful for fixing
+%             "no viable initial configuration found: may not find good beam slope" warnings
+%
+% beamauto left right: Automatically positions horizontal beams between notes with alternating stem directions. 
+%                      Modify left, right values to fine-tune the beam heights, or 0, 0 for a straight line
+%
+% snhs '(p1 p2 p3 ...): Shift noteheads. Place before a chord, and define the shift of each note. Example usage:
+%                       \snhs '(-1 0 0 0) % will shift the c note to the left
+%                       <c d e f>4
+%
+% hshift x: Shift an entire note (including its stem). Useful if notes are colliding visually.
+%
+% shiftl / shiftr: offsets a single notehead in a chord
+%                  NOTE: only the notehead is shifted, without its ledger lines or anything else
+%
+% staff-dist y-dist: Forces the distance between staff lines, for a single system.  
+%                    This must be placed at the beginning of a system, otherwise it will have no effect.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % staff spacing
 #(define express-staff-space
@@ -94,6 +131,50 @@ beampos =
      \once \override Beam.positions = #(cons x y)
    #})
 
+%%%% automatic horizontal beams for beams with stems that point both up and down
+beamauto =
+#(define-music-function (l r) (number? number?)
+   #{
+     \once \override Beam.positions = 
+      #(lambda (grob)
+        (let* ( 
+                  (beam-staff (ly:grob-object grob 'staff-symbol))
+                  (stems (ly:grob-array->list (ly:grob-object grob 'stems)))
+                  ;; Filter stems by direction: 1 is UP, -1 is DOWN
+                  (up-stems (filter (lambda (s) (= (ly:grob-property s 'direction) 1)) stems))
+                  (down-stems (filter (lambda (s) (= (ly:grob-property s 'direction) -1)) stems))
+                  
+                  ;; Find lowest notehead (min Y) for stems pointing UP
+                  (lowest-up (if (null? up-stems) #f
+                                (apply max (map (lambda (s) (stem-edge-position s beam-staff)) up-stems))))
+                  
+                  ;; Find highest notehead (max Y) for stems pointing DOWN
+                  (highest-down (if (null? down-stems) #f
+                                  (apply min (map (lambda (s) (stem-edge-position s beam-staff)) down-stems))))
+
+                  (beam-counts (map (lambda (s) (get-beam-count s)) stems))
+                  (max-beams (apply max beam-counts))
+                                       
+                  (beam-height (calc-beam-height grob max-beams))
+                  ;(beam-height 0)
+                  (positions (if (and (number? lowest-up) (number? highest-down))
+                                (let* (
+                                        (avg (/ (+ lowest-up highest-down) 2))
+                                        (pos (+ avg (/ beam-height 2)))
+                                      )
+                                  (cons (+ pos l) (+ pos r))
+                                ) 
+                            (begin
+                              (ly:input-warning (*location*) "unable to apply \\beamauto to a single stem direction beam")
+                              (beam::place-broken-parts-individually grob))
+                  ))
+              )
+            ;(debug D-ALL "beamauto. lowest-up: ~a, highest-down: ~a, avg: ~a" lowest-up highest-down avg)
+
+            positions
+        ))
+   #})
+
 
 %%%% helper shorthand functions to offset a note in a chord, when there are crammed notes on top of each other
 shiftl =
@@ -115,6 +196,14 @@ hshift =
      \once \override NoteColumn.force-hshift = #x
    #})
 
+% sets the distance between staff lines for a single system (place at the beginning of the system)
+staff-dist =
+#(define-music-function (y-dist) (number?)
+   #{
+     \once \override Score.NonMusicalPaperColumn.line-break-system-details = 
+       #`((alignment-distances . (,y-dist)))
+   #})
+
 
 % shift note heads. Place before a chord, and define the shift of each note. Example usage:
 % \snhs #'(-1 0 0 0)
@@ -128,6 +217,71 @@ snhs =
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%% INTERNAL CODE STARTS HERE
+
+#(define (stem-edge-position stem other-staff)
+  (let* (
+          (my-staff (ly:grob-object stem 'staff-symbol))
+          (system (ly:grob-common-refpoint my-staff other-staff Y))
+          (my-y (ly:grob-relative-coordinate my-staff system Y))
+          (other-y (ly:grob-relative-coordinate other-staff system Y))
+          (relative-pos (/ (- my-y other-y) express-staff-space))
+
+          (dir (ly:grob-property stem 'direction))
+          (nh-array (ly:grob-object stem 'note-heads))
+          (nh-list (ly:grob-array->list nh-array))
+          (positions (map (lambda (nh) 
+                              (+ (ly:grob-property nh 'Y-offset)
+                                 (stencil-center (ly:grob-property nh 'stencil) Y))
+                          ) nh-list))
+          (pos (if (= dir 1)
+              (apply min positions)  ; Lowest notehead for UP stems
+              (apply max positions))) ; Highest notehead for DOWN stems
+        )
+        ;(debug D-ALL "   positions: ~a, relative-pos: ~a, final: ~a" positions relative-pos (+ pos relative-pos))
+        (+ pos relative-pos)
+  ) 
+)
+
+#(define (calc-beam-height beam-grob beam-count)
+  (let* (
+          (height (if (> beam-count 0) 
+            (let* (
+                    (beam-thickness (ly:grob-property beam-grob 'beam-thickness))                  
+                    (line-thick (ly:staff-symbol-line-thickness beam-grob))
+                    (len-frac (ly:grob-property beam-grob 'length-fraction)) ; that's the distance between beams
+                    (beams-from-first (max (- beam-count 1) 0))
+
+                    (single-beam-dist (if (< beam-count 4)
+                        (/ (- (+ (* 2 len-frac) 
+                                (* line-thick len-frac)) 
+                              beam-thickness) 
+                          2.0)
+                        (/ (- (+ (* 3 len-frac) 
+                                (* line-thick len-frac)) 
+                              beam-thickness) 
+                          3.0)))
+
+                    (beam-dist (* single-beam-dist beams-from-first) )
+                  )
+              (+ beam-dist beam-thickness)
+            )
+            0
+          ))
+      )
+    height
+))
+
+% returns the number of beams coming out of a stem
+#(define (get-beam-count stem-grob)
+  (let* (
+        (beaming (ly:grob-property stem-grob 'beaming))
+        (num-beams (if (list? beaming)
+            (length (filter number? beaming))
+            0
+        ))
+  )
+    num-beams
+))
 
 #(define express-staff-space-inv (/ 1 express-staff-space))
 
@@ -148,6 +302,13 @@ snhs =
 
 #(define (stencil-size stencil dim)
   (extent-size (ly:stencil-extent stencil dim)))
+
+
+#(define (extent-center extent)
+  (/ (+ (cdr extent) (car extent)) 2))
+
+#(define (stencil-center stencil dim)
+  (extent-center (ly:stencil-extent stencil dim)))
 
 #(define (center-glyph glyph)
   (let* (
@@ -729,13 +890,8 @@ ottava =
 #(define (beam-y-offset stem-grob beam-grob stem-dir margin x-offset)
   (let* (
 
-        (beaming (ly:grob-property stem-grob 'beaming))
-        (num-beams (if (list? beaming)
-            (length (filter number? beaming))
-            0
-        ))
-
-        (y-offset (if (> num-beams 0) 
+        (beam-count (get-beam-count stem-grob))
+        (y-offset (if (> beam-count 0) 
           (let* (
                 ; calculate the beam's slope:
                   (y-pos (ly:grob-property beam-grob 'positions))
@@ -754,27 +910,8 @@ ottava =
                   (y-offset-base (* slope x-offset)) ; the base offset, based on the beam's slope and the x-offset from the stem
 
                   ; additional offset due to the beams' count and thickness
-                  (beam-thickness (ly:grob-property beam-grob 'beam-thickness))
-                  (gap (ly:grob-property beam-grob 'length-fraction)) ; that's the distance between beams
-                  
-                  (line-thick (ly:staff-symbol-line-thickness beam-grob))
-                  (len-frac (ly:grob-property beam-grob 'length-fraction)) ; that's the distance between beams
-                  (beams-from-first (max (- num-beams 1) 0))
-
-                  (beam-dist (if (< num-beams 4)
-                      (/ (- (+ (* 2 len-frac) 
-                              (* line-thick len-frac)) 
-                            beam-thickness) 
-                        2.0)
-                      (/ (- (+ (* 3 len-frac) 
-                              (* line-thick len-frac)) 
-                            beam-thickness) 
-                        3.0)))
-
-                  (extra-gap (* beam-dist beams-from-first) )
-
-                  ; add a small margin so the dot is not touching the beam
-                  (extra-gap (+ extra-gap beam-thickness margin))
+                  (beam-height (calc-beam-height beam-grob beam-count))
+                  (extra-gap (+ beam-height margin))
 
               )
             (+ y-offset-base (* -1 stem-dir extra-gap))
