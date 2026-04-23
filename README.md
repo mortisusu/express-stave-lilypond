@@ -202,7 +202,7 @@ To control the vertical staff spacing (that's the space between the three staff 
 </div>
 
 
-To set the space between the right-hand and left-hand staff lines, use `StaffGrouper.staff-staff-spacing` or the `\staff-dist` helper function:
+To set the space between the right-hand and left-hand staff lines, use `StaffGrouper.staff-staff-spacing` or the `\staffDist` helper function:
 
 <div style="display: flex; align-items: center;">
   <div style="width:100%">
@@ -218,7 +218,7 @@ To set the space between the right-hand and left-hand staff lines, use `StaffGro
   }
 }<br>
 % to set the distance for a single system, use this at the BEGINNING of a system:
-\staff-dist #15
+\staffDist #15
 </code></pre>
   </div>
   <img alt="" src="./assets/docs/staff-staff-space.png" style="margin-left: 20px;" height="140">
@@ -286,14 +286,14 @@ Use ``\noBreak`` and ``\noPageBreak`` to prevent breaks.
 These warnings happen when the system has problems rendering a  beams. You may notice strange beam angles in the affected area. You may safely ignore these if the display is correct. To fix, add the following **right before** the problematic section:
 
 ```
-\beampos -12.5 -10 % change these values until you are pleased with the result
+\beamPos #(-12.5 . -10) % change these values until you are pleased with the result
 ```
 
-For incorrect beams that connect stems to go both up and down, the `\beamauto` command creates a horizontal beam. For example:
+For incorrect beams that connect stems to go both up and down, the `\beamAuto` command creates a horizontal beam. For example:
 
 <div style="display: flex; align-items: center;">
   <div style="width:100%">
-    <pre><code>\beamauto 0 0 % modify 0 0 to adjust the edge heights
+    <pre><code>\beamAuto #'(0 . 0) % modify 0 0 to adjust the edge heights
 \change Staff="2" \stemUp d'32 [ \change Staff="1" \stemDown e'
 \change Staff="2" \stemUp d' \change Staff="1" \stemDown e'
 \change Staff="2" \stemUp eis' \change Staff="1" \stemDown f' ]

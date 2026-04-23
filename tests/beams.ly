@@ -85,11 +85,11 @@ notes = {
 
 
     \break
-    \staff-dist 12
+    \staffDist 12
 
     \repeat tremolo 6 { f'32 g' } 
     \repeat tremolo 8 { f'32 g' } s8 | 
-    s1 _\mono "\staff-dist 12"| s1 |
+    s1 _\mono "\staffDist 12"| s1 |
     % \override Beam.gap = #0.9
     
     \repeat tremolo 16 { f32 g } 
