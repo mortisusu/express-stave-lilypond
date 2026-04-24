@@ -519,7 +519,6 @@ lhDown= {\lhDown \relative c' \lhDownGrey }
   r4._\markup\dynamic"ppp" \ottava #1 <f af>4.\( f4. ~ |
   \stemDown \tieDown s8*9 |
   \stemUp 
-  \beampos 4 10
   f16_\( af c f af c \cu\hideNotes af'4.\) \unHideNotes\cl r4. |
   f2._- f4._- |
   \myExplicitPageBreak

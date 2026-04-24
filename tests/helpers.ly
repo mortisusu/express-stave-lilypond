@@ -8,7 +8,7 @@ express-pianoforte = 1
 \include "../lib/express-stave.ly" % comment-out to show classical notation
 
 \header {
-	title = "Beams"
+	title = "Helper Functions"
   subtitle =" "
 	style =	"Music Style"
   footer = "Express Stave"
@@ -59,77 +59,104 @@ mono =
 
 notes = {
 
-    % f'16. f' s16*7 [f'16. f']| s1 |s1 |s1|
+%%%%%%%%%%%%%%%%%%%%%%%%%
 
-    % g''8. g'' s8*5 | s1 | s1 |s1 | % a single beam
-    
-    g'8. g' s16     g'16. g' s16    [g'32. g'] s16    [g'64. g'] s16    [g'64. g']
-    
-    | 
-    s1 | s1 | 
-    b8. b s16 b16. b s16  [b32. b] s16 [b64. b] s64*7|
+    s8
+    <e' f'>4  
+    \stemNeutral s8 ^\mono "\hshift #-1"  
 
-    f'8. _"slope" g' s16 f'16. g' s16  [f'32. g'] s32*7 | 
-    s1 | s1 | 
-    f8. g s16 f16. g s16  [f32. g] s32*7 |
-   
-    \repeat tremolo 4 { f'32 _"tremolos" g' } 
-    % \once \override Beam.gap-count = #3 % A higher number covers more bars
-    \repeat tremolo 12 { f'32 f' } |
-    s1 |  s1|
-    \repeat tremolo 4 { f32 g } 
-    % \once \override Beam.gap-count = #20 % A higher number covers more bars
-    % \override Beam.gap = #0.9
-    % \override Beam.normalized-endpoints = #(cons 0.4 1)
-    \repeat tremolo 12 { f32 g } |
+    s8 
+    \hshift #-1
+    <e' f'>4 
+    \stemNeutral s8 
+    | s1 |
+
+    s8 \stemDown   \change Staff = "1"   
+    % \hshift #0
+    <e' f'>
+    \stemNeutral \change Staff = "2" s8 
+    s8 _\mono "\hshift #0"
+
+    s8  \stemDown \change Staff = "1" 
+    \hshift #0
+    <e' f'>
+    \stemNeutral \change Staff = "2" s8 
+    
+    s8 |
+    s1 |
+                
+%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    <c' cis' e'>4
+    s16 ^\mono "\snhs #'(0 0 1)"
+    \snhs #'(0 0 1)
+    <c' cis' e'>4
+    s16*7
+    | s1| s1| s1|
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+    s1| s1|
+    <gis' d'>2
+    <\shiftl gis' \shiftr d'>2 ^\mono "\shiftl" _\mono "\shiftr"
+    |s1|
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    s8
+    \stemDown a'16 [ g' e' g \change Staff = "2"
+    \stemUp f d ] \change Staff = "1" 
+    
+    \beampos #'(-10 . -14)
+    \stemDown a'16 [ g' e' g \change Staff = "2"
+    \stemUp f d ] \change Staff = "1" 
+     s8
+    |
+    s1 | s1 | s16*8  s16*8 _\mono "\beampos #'(-10 . -14)"|
+
 
 
     \break
     \staffdist 12
-
-    \repeat tremolo 6 { f'32 g' } 
-    \repeat tremolo 8 { f'32 g' } s8 | 
-    s1 _\mono "\staffdist 12"| s1 |
-    % \override Beam.gap = #0.9
+ 
+    s1 | s1 | s1 | s1 _\mono "\staffdist 12" | 
     
-    \repeat tremolo 16 { f32 g } 
-    | 
 
-
+    s4 s16 s8
+    \change Staff="2"
+    \stemUp c'32 [ \change Staff="1" \stemDown f' \change Staff="2"
+    \stemUp c' \change Staff="1" \stemDown f' \change Staff="2"
+    \stemUp c' \change Staff="1" \stemDown f' ]
+    s16
     \beamauto #'(0 . 0)
     \change Staff="2"
-    \stemUp c'32  _\mono "\beamauto #'(0 . 0)" [ \change Staff="1" \stemDown f' \change Staff="2"
+    \stemUp c'32 _\mono "\beamauto #'(0 . 0)" [ \change Staff="1" \stemDown f' \change Staff="2"
     \stemUp c' \change Staff="1" \stemDown f' \change Staff="2"
     \stemUp c' \change Staff="1" \stemDown f' ]
 
-    \beamauto #'(0 . 0)
-    \change Staff="2"
-    \stemUp c'8 [ \change Staff="1" \stemDown f' \change Staff="2"
-    \stemUp c' \change Staff="1" \stemDown f' \change Staff="2"
-    \stemUp c' \change Staff="1" \stemDown f' ]
-    s16|
-    s1 |s1 |s1 | \noBreak
+    s8 |
+    s1 | s1 | s1 | \noBreak
 
+    s4 s16
+    \change Staff="2" \stemUp d'32 [ \change Staff="1" \stemDown e'
+    \change Staff="2" \stemUp d' \change Staff="1" \stemDown e'
+    \change Staff="2" \stemUp eis' \change Staff="1" \stemDown f'
+     ]
 
+    s16
     \beamauto #'(-1 . 1)
     \change Staff="2" \stemUp d'32 _\mono "\beamauto #'(-1 . 1)" [ \change Staff="1" \stemDown e'
     \change Staff="2" \stemUp d' \change Staff="1" \stemDown e'
     \change Staff="2" \stemUp eis' \change Staff="1" \stemDown f'
      ]
-    % r32*6
+    s4 |
 
-    \beamauto #'(-1 . 1)
-    \change Staff="2" \stemUp d'8 [ \change Staff="1" \stemDown e'
-    \change Staff="2" \stemUp d' \change Staff="1" \stemDown e'
-    \change Staff="2" \stemUp eis' \change Staff="1" \stemDown f'
-     ]
-     s16|
     s1 |s1 |s1 |
 
-    % \break
-    % s1 | s1 | s1 | 
-    % \repeat tremolo 24 { f32 g } |
-    % s1 | s1 | s1 | s2 |
+    \break
+
+    \staffdist 20
+    s1 | s1 | s1 | s1 _\mono "\staffdist 20" | 
+
 }
 
 

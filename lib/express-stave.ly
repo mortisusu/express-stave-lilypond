@@ -38,7 +38,7 @@
 %   https://gitlab.com/paulmorris/lilypond-clairnote
 
 \version "2.24.0"
-#(define ES_VERSION "1.26.04.23")
+#(define ES_VERSION "1.26.04.24")
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -62,10 +62,10 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%% Helper functions:
 %
-% beamPos left right: Manual override of the beam positions. Useful for fixing
+% beampos left right: Manual override of the beam positions. Useful for fixing
 %             "no viable initial configuration found: may not find good beam slope" warnings
 %
-% beamAuto left right: Automatically positions horizontal beams between notes with alternating stem directions. 
+% beamauto left right: Automatically positions horizontal beams between notes with alternating stem directions. 
 %                      Modify left, right values to fine-tune the beam heights, or 0, 0 for a straight line
 %
 % snhs '(p1 p2 p3 ...): Shift noteheads. Place before a chord, and define the shift of each note. Example usage:
@@ -77,7 +77,7 @@
 % shiftl / shiftr: offsets a single notehead in a chord
 %                  NOTE: only the notehead is shifted, without its ledger lines or anything else
 %
-% staffDist y-dist: Forces the distance between staff lines, for a single system.  
+% staffdist y-dist: Forces the distance between staff lines, for a single system.  
 %                    This must be placed at the beginning of a system, otherwise it will have no effect.
 
 
@@ -126,12 +126,6 @@
 %%%% helper shorthand function to fix "no viable initial configuration found: may not find good beam slope" warnings
 %%%% usage: \beampos <y-start> <y-end>
 beampos =
-#(define-music-function (x y) (number? number?)
-   #{
-     \once \override Beam.positions = #(cons x y)
-   #})
-
-beamPos =
 #(define-music-function (pos) (pair?)
    #{
      \once \override Beam.positions = #pos
@@ -139,11 +133,29 @@ beamPos =
 
 %%%% automatic horizontal beams for beams with stems that point both up and down
 beamauto =
-#(define-music-function (l r) (number? number?)
+#(define-music-function (offsets) (scheme?)
    #{
      \once \override Beam.positions = 
       #(lambda (grob)
         (let* ( 
+                  (offsets (cond
+                        ; Case: empty list #'() -> (0 . 0)
+                        ((null? offsets) 
+                          (cons 0 0))
+                        
+                        ; Case: single element list #'(5) -> (5 . 5)
+                        ((and (list? offsets) (= (length offsets) 1))
+                          (cons (car offsets) (car offsets)))
+                        
+                        ; Case: actual pair #'(5 . 3) -> (5 . 3)
+                        ((pair? offsets)
+                          offsets)
+                        
+                        (else (begin 
+                            (ly:warning "Invalid input to beam-auto: ~a" offsets)
+                            (cons 0 0)
+                        ))))
+
                   (beam-staff (ly:grob-object grob 'staff-symbol))
                   (stems (ly:grob-array->list (ly:grob-object grob 'stems)))
                   ;; Filter stems by direction: 1 is UP, -1 is DOWN
@@ -168,7 +180,7 @@ beamauto =
                                         (avg (/ (+ lowest-up highest-down) 2))
                                         (pos (+ avg (/ beam-height 2)))
                                       )
-                                  (cons (+ pos l) (+ pos r))
+                                  (cons (+ pos (car offsets)) (+ pos (cdr offsets)))
                                 ) 
                             (begin
                               (ly:input-warning (*location*) "unable to apply \\beamauto to a single stem direction beam")
@@ -180,24 +192,6 @@ beamauto =
             positions
         ))
    #})
-
-beamAuto=
-#(define-music-function (pos) (scheme?)
-   (cond
-    ;; Case: empty list #'() -> (0 . 0)
-    ((null? pos) 
-     (beamauto 0 0))
-    
-    ;; Case: single element list #'(5) -> (5 . 5)
-    ((and (list? pos) (= (length pos) 1))
-     (beamauto (car pos) (car pos)))
-    
-    ;; Case: actual pair #'(5 . 3) -> (5 . 3)
-    ((pair? pos)
-     (beamauto (car pos) (cdr pos)))
-    
-    (else (ly:warning "Invalid input to beam-auto: ~a" pos))))
-
 
 %%%% helper shorthand functions to offset a note in a chord, when there are crammed notes on top of each other
 shiftl =
@@ -220,7 +214,7 @@ hshift =
    #})
 
 % sets the distance between staff lines for a single system (place at the beginning of the system)
-staffDist =
+staffdist =
 #(define-music-function (y-dist) (number?)
    #{
      \once \override Score.NonMusicalPaperColumn.line-break-system-details = 
