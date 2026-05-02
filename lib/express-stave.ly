@@ -38,7 +38,7 @@
 %   https://gitlab.com/paulmorris/lilypond-clairnote
 
 \version "2.24.0"
-#(define ES_VERSION "1.26.04.24")
+#(define ES_VERSION "1.26.05.02")
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -119,9 +119,10 @@
 % note: do not make this any bigger, as it causes note unification to fail. See comment when using below.
 #(define notehead-width 1.3)
 
+#(define express-active 1)
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%% HELPER FUNCTIONS - USABLE BY LILYPOND USERS
-
 
 %%%% helper shorthand function to fix "no viable initial configuration found: may not find good beam slope" warnings
 %%%% usage: \beampos <y-start> <y-end>
@@ -131,66 +132,83 @@ beampos =
      \once \override Beam.positions = #pos
    #})
 
+#(define (beam-pos-cross-stem offsets)
+(lambda (grob)
+  (let* (
+    (offset-adjust (not (null? offsets)))
+    (offsets (cond
+          ; Case: empty list #'() -> (0 . 0)
+          ((null? offsets) 
+            (cons 0 0))
+          
+          ; Case: single element list #'(5) -> (5 . 5)
+          ((and (list? offsets) (= (length offsets) 1))
+            (cons (car offsets) (car offsets)))
+          
+          ; Case: actual pair #'(5 . 3) -> (5 . 3)
+          ((pair? offsets)
+            offsets)
+          
+          (else (begin 
+              ; (ly:warning "Invalid input to beam-auto: ~a" offsets)
+              (cons 0 0)
+          ))))
+
+    (beam-staff (ly:grob-object grob 'staff-symbol))
+    (stems (ly:grob-array->list (ly:grob-object grob 'stems)))
+    ;; Filter stems by direction: 1 is UP, -1 is DOWN
+    (up-stems (filter (lambda (s) (= (ly:grob-property s 'direction) 1)) stems))
+    (down-stems (filter (lambda (s) (= (ly:grob-property s 'direction) -1)) stems))
+    ;; Find highest notehead (min Y) for stems pointing UP
+    (max-up (if (null? up-stems) #f
+                  (apply max (map (lambda (s) (stem-edge-position s beam-staff)) up-stems))))
+    
+    ;; Find lowest notehead (max Y) for stems pointing DOWN
+    (min-down (if (null? down-stems) #f
+                    (apply min (map (lambda (s) (stem-edge-position s beam-staff)) down-stems))))
+
+    (beam-counts (map (lambda (s) (get-beam-count s)) stems))
+    (max-beams (apply max beam-counts))
+                          
+    (beam-height (calc-beam-height grob max-beams))
+    (single-beam-thickness (if (> max-beams 0) (ly:grob-property grob 'beam-thickness) 0))
+
+    ; reducing one beam thickness since the beam is draw from the center of the first beam:
+    (beam-offset (- beam-height single-beam-thickness)) 
+    (first-stem-direction (if (null? stems) 1
+                                (ly:grob-property (car stems) 'direction)))
+    (positions (cond 
+        ((or (not (number? max-up)) (not (number? min-down)))
+            (ly:input-warning (*location*) "unable to apply \\beamauto to a non multi stem-direction beam")
+            (beam::place-broken-parts-individually grob))
+
+        ((and (not offset-adjust) (< (- min-down max-up) beam-height))
+            (ly:input-warning (*location*) "not enough free space to apply \\beamauto without adjustments")
+            (beam::place-broken-parts-individually grob))
+
+        (else
+            (let* (
+                    (avg (* (+ max-up min-down) 0.5))
+                    (pos (+ avg (* beam-offset 0.5 first-stem-direction)))
+                  )
+              ; (ly:grob-set-property! grob 'color red)
+              (cons (+ pos (car offsets)) (+ pos (cdr offsets)))
+            ))
+    ))
+
+    ; (debug-pos (+ max-up (* beam-offset 0.5 first-stem-direction)))
+  )
+  ;(debug D-ALL "beamauto. max-up: ~a, min-down: ~a, result: ~a" max-up min-down positions)
+  ; (debug D-ALL "beamauto. offsets: ~a, beam-height: ~a, beam-offset: ~a" offsets beam-height beam-offset)
+  positions
+  ; (cons debug-pos debug-pos)
+)))
+
 %%%% automatic horizontal beams for beams with stems that point both up and down
 beamauto =
 #(define-music-function (offsets) (scheme?)
    #{
-     \once \override Beam.positions = 
-      #(lambda (grob)
-        (let* ( 
-                  (offsets (cond
-                        ; Case: empty list #'() -> (0 . 0)
-                        ((null? offsets) 
-                          (cons 0 0))
-                        
-                        ; Case: single element list #'(5) -> (5 . 5)
-                        ((and (list? offsets) (= (length offsets) 1))
-                          (cons (car offsets) (car offsets)))
-                        
-                        ; Case: actual pair #'(5 . 3) -> (5 . 3)
-                        ((pair? offsets)
-                          offsets)
-                        
-                        (else (begin 
-                            (ly:warning "Invalid input to beam-auto: ~a" offsets)
-                            (cons 0 0)
-                        ))))
-
-                  (beam-staff (ly:grob-object grob 'staff-symbol))
-                  (stems (ly:grob-array->list (ly:grob-object grob 'stems)))
-                  ;; Filter stems by direction: 1 is UP, -1 is DOWN
-                  (up-stems (filter (lambda (s) (= (ly:grob-property s 'direction) 1)) stems))
-                  (down-stems (filter (lambda (s) (= (ly:grob-property s 'direction) -1)) stems))
-                  
-                  ;; Find lowest notehead (min Y) for stems pointing UP
-                  (lowest-up (if (null? up-stems) #f
-                                (apply max (map (lambda (s) (stem-edge-position s beam-staff)) up-stems))))
-                  
-                  ;; Find highest notehead (max Y) for stems pointing DOWN
-                  (highest-down (if (null? down-stems) #f
-                                  (apply min (map (lambda (s) (stem-edge-position s beam-staff)) down-stems))))
-
-                  (beam-counts (map (lambda (s) (get-beam-count s)) stems))
-                  (max-beams (apply max beam-counts))
-                                       
-                  (beam-height (calc-beam-height grob max-beams))
-                  ;(beam-height 0)
-                  (positions (if (and (number? lowest-up) (number? highest-down))
-                                (let* (
-                                        (avg (/ (+ lowest-up highest-down) 2))
-                                        (pos (+ avg (/ beam-height 2)))
-                                      )
-                                  (cons (+ pos (car offsets)) (+ pos (cdr offsets)))
-                                ) 
-                            (begin
-                              (ly:input-warning (*location*) "unable to apply \\beamauto to a single stem direction beam")
-                              (beam::place-broken-parts-individually grob))
-                  ))
-              )
-            ;(debug D-ALL "beamauto. lowest-up: ~a, highest-down: ~a, avg: ~a" lowest-up highest-down avg)
-
-            positions
-        ))
+     \once \override Beam.positions = #(beam-pos-cross-stem offsets)
    #})
 
 %%%% helper shorthand functions to offset a note in a chord, when there are crammed notes on top of each other
@@ -248,45 +266,43 @@ snhs =
           (nh-list (ly:grob-array->list nh-array))
           (positions (map (lambda (nh) 
                               (+ (ly:grob-property nh 'Y-offset)
-                                 (stencil-center (ly:grob-property nh 'stencil) Y))
+                                 ((if (< dir 0) car cdr) (ly:stencil-extent (ly:grob-property nh 'stencil) Y)))
                           ) nh-list))
           (pos (if (= dir 1)
-              (apply min positions)  ; Lowest notehead for UP stems
-              (apply max positions))) ; Highest notehead for DOWN stems
+              (apply max positions)  ; Highest notehead for UP stems
+              (apply min positions))) ; Lowest notehead for DOWN stems
+          (pos (/ pos express-staff-space))
         )
-        ;(debug D-ALL "   positions: ~a, relative-pos: ~a, final: ~a" positions relative-pos (+ pos relative-pos))
+        ; (debug D-ALL "   positions: ~a, relative-pos: ~a, final: ~a" positions relative-pos (+ pos relative-pos))
         (+ pos relative-pos)
   ) 
 )
 
 #(define (calc-beam-height beam-grob beam-count)
-  (let* (
-          (height (if (> beam-count 0) 
-            (let* (
-                    (beam-thickness (ly:grob-property beam-grob 'beam-thickness))                  
-                    (line-thick (ly:staff-symbol-line-thickness beam-grob))
-                    (len-frac (ly:grob-property beam-grob 'length-fraction)) ; that's the distance between beams
-                    (beams-from-first (max (- beam-count 1) 0))
+  (if (> beam-count 0) 
+    (let* (
+            (beam-thickness (ly:grob-property beam-grob 'beam-thickness))
+            (line-thick (ly:staff-symbol-line-thickness beam-grob))
+            (len-frac (ly:grob-property beam-grob 'length-fraction)) ; that's the distance between beams
+            (beams-from-first (max (- beam-count 1) 0))
 
-                    (single-beam-dist (if (< beam-count 4)
-                        (/ (- (+ (* 2 len-frac) 
-                                (* line-thick len-frac)) 
-                              beam-thickness) 
-                          2.0)
-                        (/ (- (+ (* 3 len-frac) 
-                                (* line-thick len-frac)) 
-                              beam-thickness) 
-                          3.0)))
+            (single-beam-dist (if (< beam-count 4)
+                (/ (- (+ (* 2 len-frac) 
+                        (* line-thick len-frac)) 
+                      beam-thickness) 
+                  2.0)
+                (/ (- (+ (* 3 len-frac) 
+                        (* line-thick len-frac)) 
+                      beam-thickness) 
+                  3.0)))
 
-                    (beam-dist (* single-beam-dist beams-from-first) )
-                  )
-              (+ beam-dist beam-thickness)
-            )
-            0
-          ))
-      )
-    height
-))
+            (beam-dist (* single-beam-dist beams-from-first) )
+          )
+      (+ beam-dist beam-thickness)
+    )
+    0
+  )
+)
 
 % returns the number of beams coming out of a stem
 #(define (get-beam-count stem-grob)
@@ -1390,6 +1406,7 @@ stopAcciaccaturaMusic = {
 
       \override Beam.gap-count = #(grob-transformer 'gap-count beam-gap-count-callback)
       \override Beam.gap = #(grob-transformer 'gap beam-gap-callback)
+      % \override Beam.positions = #(beam-pos-cross-stem (cons 0 0))
 
     }
  

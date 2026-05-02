@@ -143,8 +143,8 @@ notes = {
      ]
 
     s16
-    \beamauto #'(-1 . 1)
-    \change Staff="2" \stemUp d'32 _\mono "\beamauto #'(-1 . 1)" [ \change Staff="1" \stemDown e'
+    \beamauto #'(-2 . 1)
+    \change Staff="2" \stemUp d'32 _\mono "\beamauto #'(-2 . 1)" [ \change Staff="1" \stemDown e'
     \change Staff="2" \stemUp d' \change Staff="1" \stemDown e'
     \change Staff="2" \stemUp eis' \change Staff="1" \stemDown f'
      ]

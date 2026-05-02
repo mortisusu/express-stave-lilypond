@@ -4,8 +4,10 @@
 snhs = #(define-music-function (offsets) (list?))
 
 % express-staff-space  = #1.66666666 % uncomment to modify the notation space
-express-pianoforte = 1
+
 \include "../lib/express-stave.ly" % comment-out to show classical notation
+
+beamautox = #(define-music-function (x) (scheme?) #{ #})
 
 \header {
 	title = "Beams"
@@ -125,6 +127,14 @@ notes = {
      ]
      s16|
     s1 |s1 |s1 |
+
+    s1 | 
+    s16*10
+    \beamauto #'()
+    \change Staff="2" \stemUp  <f ais>16 _\mono "\beamauto #'()" [ \change Staff="1" \stemDown <b dis' fis'>  
+    \change Staff="2" \stemUp <f gis>  \change Staff="1" \stemDown <b dis' eis'> 
+    \change Staff="2"  \stemUp <d fis> \change Staff="1" \stemDown <b dis' ais'> ]
+    | s1 | s1 | 
 
     % \break
     % s1 | s1 | s1 | 
