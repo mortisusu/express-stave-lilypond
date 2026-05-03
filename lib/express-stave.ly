@@ -38,7 +38,7 @@
 %   https://gitlab.com/paulmorris/lilypond-clairnote
 
 \version "2.24.0"
-#(define ES_VERSION "1.26.05.02")
+#(define ES_VERSION "1.26.05.03")
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -132,7 +132,7 @@ beampos =
      \once \override Beam.positions = #pos
    #})
 
-#(define (beam-pos-cross-stem offsets)
+#(define (beam-pos-cross-stem offsets show-warnings beam-color)
 (lambda (grob)
   (let* (
     (offset-adjust (not (null? offsets)))
@@ -179,10 +179,11 @@ beampos =
                                 (ly:grob-property (car stems) 'direction)))
     (positions (cond 
         ((or (not (number? max-up)) (not (number? min-down)))
-            (ly:input-warning (*location*) "unable to apply \\beamauto to a non multi stem-direction beam")
+            (when show-warnings
+              (ly:input-warning (*location*) "unable to apply \\beamauto to a non multi stem-direction beam"))
             (beam::place-broken-parts-individually grob))
 
-        ((and (not offset-adjust) (< (- min-down max-up) beam-height))
+        ((and show-warnings (not offset-adjust) (< (- min-down max-up) beam-height))
             (ly:input-warning (*location*) "not enough free space to apply \\beamauto without adjustments")
             (beam::place-broken-parts-individually grob))
 
@@ -191,7 +192,8 @@ beampos =
                     (avg (* (+ max-up min-down) 0.5))
                     (pos (+ avg (* beam-offset 0.5 first-stem-direction)))
                   )
-              ; (ly:grob-set-property! grob 'color red)
+              (when beam-color
+                (ly:grob-set-property! grob 'color beam-color))
               (cons (+ pos (car offsets)) (+ pos (cdr offsets)))
             ))
     ))
@@ -208,7 +210,7 @@ beampos =
 beamauto =
 #(define-music-function (offsets) (scheme?)
    #{
-     \once \override Beam.positions = #(beam-pos-cross-stem offsets)
+     \once \override Beam.positions = #(beam-pos-cross-stem offsets #t #f)
    #})
 
 %%%% helper shorthand functions to offset a note in a chord, when there are crammed notes on top of each other
