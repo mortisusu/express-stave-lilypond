@@ -316,3 +316,9 @@ Change the note's voice using `\voiceOne`, `\voiceTwo`, etc. Remember to revert 
 % this section is part of \voiceOne. we are fixing the voice warning on the g note:
 f f \voiceThree g \voiceOne c |
 ```
+
+## Credits
+
+The code in this library is based on the MNP-scripts.ly created by the [Music Notation Project](https://musicnotation.org). The original code can be found in the [Music Notation Project Wiki](https://musicnotation.org/wiki/software/lilypond/).
+
+Parts of the code are based on the [clairnote.ly](https://gitlab.com/paulmorris/lilypond-clairnote) library by Paul Morris. You can read more about the Clairnote notation system [here](https://clairnote.org/).
